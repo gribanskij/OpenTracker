@@ -63,7 +63,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
 
     private fun bindToService(){
-        //requireActivity().startService(Intent(requireActivity(), TrackerService::class.java))
+        requireActivity().startService(Intent(requireActivity(), TrackerService::class.java))
         Intent(requireActivity(), TrackerService::class.java).also { intent ->
             requireActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
