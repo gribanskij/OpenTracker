@@ -131,7 +131,7 @@ class TrackerService : Service() {
             action = TRACK_TIMER_ACTION
         }
 
-        val tTime = SystemClock.elapsedRealtime() + (futureTriggerTime - System.currentTimeMillis()  )
+        val tTime = SystemClock.elapsedRealtime() + futureTriggerTime - System.currentTimeMillis()
 
         val pIntent = PendingIntent.getBroadcast(this, TRACK_TIMER, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
@@ -140,20 +140,15 @@ class TrackerService : Service() {
         }
     }
 
-    private fun getFistStartTimePoint():Long{
-
-        return System.currentTimeMillis() + FIRST_START_TIME_INTERVAL
-
-
-    }
-
     private fun getNextTimePoint ():Long{
-
-        return 100L
-
+        return if (isInWrkTimeNow()) getFirstStartTimePoint()
+        else getNextWorkDayTimePointStart()
 
     }
 
+    private fun getFirstStartTimePoint():Long{
+        return System.currentTimeMillis() + FIRST_START_TIME_INTERVAL
+    }
 
     private fun isInWrkTimeNow(): Boolean {
         if (!IS_WORK_TIME_ONLY) return true
@@ -161,12 +156,10 @@ class TrackerService : Service() {
         return isWrkDay(calendar) && isWrkTime(calendar)
     }
 
-
     private fun isWrkTime(calendar: Calendar): Boolean {
         return calendar[Calendar.HOUR_OF_DAY] in START_WORK_HOUR until END_WORK_HOUR
 
     }
-
 
     private fun isWrkDay(cal: Calendar): Boolean {
         val dayOfWeek = cal[Calendar.DAY_OF_WEEK]
@@ -194,6 +187,27 @@ class TrackerService : Service() {
         return isWrkDay
     }
 
+    private fun getNextWorkDayTimePointStart():Long{
+
+        val calendar = Calendar.getInstance()
+        val hourNow = calendar[Calendar.HOUR_OF_DAY]
+
+        if (hourNow > START_WORK_HOUR){
+            calendar.add(Calendar.DAY_OF_MONTH,1)
+            calendar.time
+        }
+
+        while (!isWrkDay(calendar)){
+            calendar.add(Calendar.DAY_OF_MONTH,1)
+            calendar.time
+        }
+
+        calendar[Calendar.HOUR_OF_DAY] = START_WORK_HOUR
+        calendar[Calendar.MINUTE] = 0
+        calendar[Calendar.SECOND] = 0
+        return calendar.time.time
+
+    }
 
 
     inner class LocalBinder : Binder() {
