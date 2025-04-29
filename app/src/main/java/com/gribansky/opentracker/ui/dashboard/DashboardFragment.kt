@@ -12,11 +12,19 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.gribansky.opentracker.R
 import com.gribansky.opentracker.core.TrackerService
 import com.gribansky.opentracker.databinding.FragmentDashboardBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
+
+    private val scope = MainScope()
 
     private lateinit var mService: TrackerService
     private var mBound: Boolean = false
@@ -29,9 +37,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             val binder = service as TrackerService.LocalBinder
             mService = binder.getService()
             mBound = true
-            mService.setUpClient {
-                binding.textDashboard.text = it.toString()
-            }
+            scope.observeTrackerState()
         }
         override fun onServiceDisconnected(arg0: ComponentName) {
             mBound = false
@@ -53,6 +59,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     override fun onStop() {
         super.onStop()
+        scope.cancel()
         unBindFromService()
     }
 
@@ -71,5 +78,14 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private fun unBindFromService(){
         requireActivity().unbindService(connection)
+    }
+
+    private fun CoroutineScope.observeTrackerState(){
+        this.launch {
+            mService.trackerState.collect{
+                binding.textDashboard.text = it.toString()
+
+            }
+        }
     }
 }

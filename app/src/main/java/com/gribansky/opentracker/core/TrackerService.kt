@@ -16,8 +16,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -26,20 +27,18 @@ private const val WAKE_LOCK_NAME = "OpenTracker:TrackerService"
 private const val TAG = "TrackerService"
 private const val TRACK_TIMER = 100
 private const val TRACK_TIMER_ACTION = "intent.action.TIMER_FIRED"
-private const val FIRST_START_TIME_INTERVAL = 60 * 1000 //ms
 
-private const val START_WORK_HOUR = 8
-private const val END_WORK_HOUR = 20
-private const val IS_WORK_TIME_ONLY = true
 
 
 class TrackerService : Service() {
+
+    private val _trackerState = MutableStateFlow(0)
+    val trackerState:StateFlow<Int> = _trackerState
 
     private val serviceScope = MainScope()
     private val startMode: Int = START_NOT_STICKY
     private val binder: IBinder = LocalBinder()
     private val allowRebind = true
-
 
 
     private var isForegroundMode = false
@@ -49,9 +48,6 @@ class TrackerService : Service() {
         PreferenceManager.getDefaultSharedPreferences(this)
     }
 
-    private val nextPointAlarmManager: AlarmManager by lazy {
-        getSystemService(ALARM_SERVICE) as AlarmManager
-    }
 
     private val lock: WakeLock by lazy {
         val pm = getSystemService(POWER_SERVICE) as PowerManager
@@ -82,13 +78,11 @@ class TrackerService : Service() {
             mainJob = serviceScope.launch {
                 repeat(1000){
                     val t = Random.nextInt(1..100)
-                    dashBoard?.invoke(t)
+                    _trackerState.emit(t)
                     delay(1000)
                 }
             }
         }
-
-
 
         return startMode
     }
@@ -102,7 +96,6 @@ class TrackerService : Service() {
 
     override fun onUnbind(intent: Intent?): Boolean {
         Log.d(TAG,"onUnbind...")
-        dashBoard = null
         return allowRebind
     }
 
@@ -114,15 +107,9 @@ class TrackerService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        dashBoard = null
         serviceScope.cancel("Service is destroying...")
         lock.release()
         Log.d(TAG,"onDestroy...")
-    }
-
-    fun setUpClient(client:(Int)->Unit){
-        dashBoard = client
-        Log.d(TAG,"setUpClient...")
     }
 
 
@@ -140,74 +127,7 @@ class TrackerService : Service() {
         }
     }
 
-    private fun getNextTimePoint ():Long{
-        return if (isInWrkTimeNow()) getFirstStartTimePoint()
-        else getNextWorkDayTimePointStart()
 
-    }
-
-    private fun getFirstStartTimePoint():Long{
-        return System.currentTimeMillis() + FIRST_START_TIME_INTERVAL
-    }
-
-    private fun isInWrkTimeNow(): Boolean {
-        if (!IS_WORK_TIME_ONLY) return true
-        val calendar = Calendar.getInstance()
-        return isWrkDay(calendar) && isWrkTime(calendar)
-    }
-
-    private fun isWrkTime(calendar: Calendar): Boolean {
-        return calendar[Calendar.HOUR_OF_DAY] in START_WORK_HOUR until END_WORK_HOUR
-
-    }
-
-    private fun isWrkDay(cal: Calendar): Boolean {
-        val dayOfWeek = cal[Calendar.DAY_OF_WEEK]
-        val month = cal[Calendar.MONTH]
-        val day = cal[Calendar.DAY_OF_MONTH]
-        val year = cal[Calendar.YEAR]
-
-        var isWrkDay = !(dayOfWeek == Calendar.SUNDAY || dayOfWeek == Calendar.SATURDAY)
-
-
-        // исключения
-        if (isWrkDay) {
-            //рабочие дни - праздники
-            if ((month == Calendar.JANUARY && year == 2025) && (day <= 3 || day == 6 || day == 7 || day == 8)) isWrkDay = false
-            else if ((month == Calendar.MAY && year == 2025 ) && (day == 1 || day == 2 || day == 9 || day == 10)) isWrkDay = false
-            else if ((month == Calendar.JUNE && year == 2025 ) && (day == 12 || day == 13)) isWrkDay = false
-            else if ((month == Calendar.NOVEMBER && year == 2025) && (day == 3 || day == 4)) isWrkDay = false
-            else if ((month == Calendar.DECEMBER && year == 2025) && (day == 31)) isWrkDay = false
-
-        } else {
-            // выходные - рабочие
-            if ((month == Calendar.NOVEMBER && year == 2025) && (day == 1)) isWrkDay = true
-        }
-
-        return isWrkDay
-    }
-
-    private fun getNextWorkDayTimePointStart():Long{
-
-        val calendar = Calendar.getInstance()
-        val hourNow = calendar[Calendar.HOUR_OF_DAY]
-
-        if (hourNow > START_WORK_HOUR){
-            calendar.add(Calendar.DAY_OF_MONTH,1)
-            calendar.time
-        }
-
-        while (!isWrkDay(calendar)){
-            calendar.add(Calendar.DAY_OF_MONTH,1)
-            calendar.time
-        }
-
-        calendar[Calendar.HOUR_OF_DAY] = START_WORK_HOUR
-        calendar[Calendar.MINUTE] = 0
-        calendar[Calendar.SECOND] = 0
-        return calendar.time.time
-
-    }
 
 
     inner class LocalBinder : Binder() {
