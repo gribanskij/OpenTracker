@@ -56,7 +56,6 @@ class TrackerService : Service() {
         }
     }
 
-    private var dashBoard: ((Int) -> Unit)? = null
 
 
     override fun onCreate() {
