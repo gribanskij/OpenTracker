@@ -17,7 +17,7 @@ import com.gribansky.opentracker.MainActivity
 
 
 const val CHANNEL_ID = "1000"
-const val notifID = 454
+const val FOREGROUND_NOTIFICATION_ID = 454
 const val notifUpID = 455
 const val notifError = 456
 
@@ -67,7 +67,7 @@ fun showFakeWarning(context: Context) {
             .setContentTitle("Предупреждение")
             .setContentText("Обнаружено подложное местоположение. Трекер не работает")
             .setAutoCancel(true)
-    NotificationManagerCompat.from(context).notify(notifID, builder.build())
+    NotificationManagerCompat.from(context).notify(FOREGROUND_NOTIFICATION_ID, builder.build())
 
 }
 
@@ -130,5 +130,5 @@ fun cancelErrorNotify(context: Context) {
 
 
 fun hideFakeWarning(context: Context) {
-    NotificationManagerCompat.from(context).cancel(notifID)
+    NotificationManagerCompat.from(context).cancel(FOREGROUND_NOTIFICATION_ID)
 }
