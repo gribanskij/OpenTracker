@@ -19,7 +19,7 @@ class TimeManager {
         return System.currentTimeMillis() + FIRST_START_TIME_INTERVAL
     }
 
-    private fun isInWrkTimeNow(): Boolean {
+    fun isInWrkTimeNow(): Boolean {
         if (!IS_WORK_TIME_ONLY) return true
         val calendar = Calendar.getInstance()
         return isWrkDay(calendar) && isWrkTime(calendar)
@@ -43,7 +43,7 @@ class TimeManager {
         if (isWrkDay) {
             //рабочие дни - праздники
             if ((month == Calendar.JANUARY && year == 2025) && (day <= 3 || day == 6 || day == 7 || day == 8)) isWrkDay = false
-            else if ((month == Calendar.MAY && year == 2025 ) && (day == 1 || day == 2 || day == 9 || day == 10)) isWrkDay = false
+            else if ((month == Calendar.MAY && year == 2025 ) && (day == 1 || day == 2 || day == 8 || day == 9 )) isWrkDay = false
             else if ((month == Calendar.JUNE && year == 2025 ) && (day == 12 || day == 13)) isWrkDay = false
             else if ((month == Calendar.NOVEMBER && year == 2025) && (day == 3 || day == 4)) isWrkDay = false
             else if ((month == Calendar.DECEMBER && year == 2025) && (day == 31)) isWrkDay = false

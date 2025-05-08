@@ -5,6 +5,9 @@ data class TrackerState (
     val gsmLastTimeReceived:Long? = null,
     val userName:String? = null,
     val serviceLastStartTime:Long? = null,
-    val serviceFutureEndTime: Long? = null
+    val serviceFutureEndTime: Long? = null,
+    val locCount:Int = 0,
+    val isForeground:Boolean = false,
+    val gpsLastTime:Long? = null,
 
 )

@@ -4,6 +4,5 @@ interface ILocation {
 
     fun start()
     fun stop()
-    fun locPointsCollected(): Int
 
 }

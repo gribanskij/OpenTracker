@@ -11,7 +11,7 @@ class TrackerReceiver:BroadcastReceiver() {
 
 
         val serviceIntent = Intent(context, TrackerService::class.java)
-        intent?.extras?.let { serviceIntent.putExtras(it) }
+        intent?.action?.let { serviceIntent.action = it }
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

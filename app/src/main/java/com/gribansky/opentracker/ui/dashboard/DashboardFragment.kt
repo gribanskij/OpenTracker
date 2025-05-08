@@ -22,12 +22,20 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.lang.StringBuilder
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private  var scope:CoroutineScope? = null
     private lateinit var mService: TrackerService
     private var mBound: Boolean = false
+
+    private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
@@ -87,7 +95,17 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private fun CoroutineScope.observeTrackerState(){
         this.launch {
             mService.trackerState.collect{
-                binding.textDashboard.text = it.toString()
+
+                val sTime = if (it.serviceLastStartTime== null) "не определено" else timeFormat.format(Date(it.serviceLastStartTime))
+                val posTime = if (it.gpsLastTime == null) "не определено" else timeFormat.format(Date(it.gpsLastTime))
+                val status = if (it.isForeground)"работает" else "ожидает запуска"
+
+                val sb = "Время старта: $sTime \n" +
+                        "Собрано точек: ${it.locCount}\n" +
+                        "Последняя точка в: $posTime \n" +
+                        "Статус трекера: $status"
+
+                binding.textDashboard.text = sb
             }
         }
     }
