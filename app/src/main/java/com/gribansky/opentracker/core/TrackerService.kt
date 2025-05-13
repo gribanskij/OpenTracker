@@ -73,7 +73,7 @@ class TrackerService : Service() {
         val fusedLocationManager = LocationServices.getFusedLocationProviderClient(this)
         //val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
         locationProvider = LocationManager(fusedLocationManager,::positionsReady)
-        _trackerState.update { prefManager.state }
+       // _trackerState.update { prefManager.state }
 
         Log.d(TAG, "onCreate")
 
@@ -110,7 +110,6 @@ class TrackerService : Service() {
             lock.release()
         }
 
-        Log.d(TAG, "onDestroy:")
     }
 
 
@@ -122,6 +121,8 @@ class TrackerService : Service() {
             Intent.ACTION_BOOT_COMPLETED -> {
                 val sTime = restartTimer()
                 updateStartTime(sTime)
+
+                addLogToHistory("SYS","app restarted")
 
             }
 
@@ -141,6 +142,8 @@ class TrackerService : Service() {
                     stopForeground()
                     updateForegroundState(false)
                 }
+
+                addLogToHistory("DATE","date changed")
             }
 
             Intent.ACTION_TIME_CHANGED -> {
@@ -150,6 +153,8 @@ class TrackerService : Service() {
                     stopForeground()
                     updateForegroundState(false)
                 }
+
+                addLogToHistory("TIME","time changed")
             }
 
             TRACKER_CLIENT_BIND -> {
@@ -157,21 +162,25 @@ class TrackerService : Service() {
                 if (currentState.serviceLastStartTime == null) {
                     val sTime = restartTimer()
                     updateStartTime(sTime)
+                    addLogToHistory("SYS","restart timer")
                 }
+
             }
 
             TRACKER_TIMER_ACTION -> {
-
 
                 if (timeManager.isInWrkTimeNow()) {
 
                     val currentState = _trackerState.value
                     if (!currentState.isForeground) {
                         startForeground()
+                        addLogToHistory("SYS","start foreground")
                         updateForegroundState(true)
+
                     }
                     lock.acquire(2*60*1000)
                     locationProvider?.start()
+                    addLogToHistory("Timer","start collecting GPS")
 
 
                 } else {
@@ -179,8 +188,10 @@ class TrackerService : Service() {
                     val sTime = restartTimer()
                     updateStartTime(sTime)
                     stopForeground()
+                    addLogToHistory("SYS","stop foreground")
                     updateForegroundState(false)
                 }
+
             }
 
             else -> {
@@ -269,4 +280,13 @@ class TrackerService : Service() {
         fun getService(): TrackerService = this@TrackerService
     }
 
+    private fun addLogToHistory(tag:String,mes:String){
+
+        updateHistory(PositionDataLog(
+            logTag = tag,
+            logMessage = mes
+        ))
+
+
+    }
 }

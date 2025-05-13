@@ -14,6 +14,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gribansky.opentracker.R
 import com.gribansky.opentracker.core.PositionData
@@ -25,10 +26,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
@@ -36,7 +37,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private lateinit var mService: TrackerService
     private var mBound: Boolean = false
 
-    private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    private val timeFormat = SimpleDateFormat("HH:mm:ss dd-MM-yy ", Locale.getDefault())
 
     private val hAdapter by lazy { HistoryAdapter() }
 
@@ -68,7 +69,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             adapter = this@DashboardFragment.hAdapter
-            itemAnimator = null
+            //addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL))
         }
 
     }
@@ -113,8 +114,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 val posTime = if (it.gpsLastTime == null) "не определено" else timeFormat.format(Date(it.gpsLastTime))
                 val status = if (it.isForeground)"работает" else "ожидает запуска"
 
-                val sb = "Время старта: $sTime \n" +
-                        "Собрано точек: ${it.locCount}\n" +
+                val sb ="Время старта: $sTime \n" +
                         "Последняя точка в: $posTime \n" +
                         "Статус трекера: $status"
 
@@ -179,6 +179,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         fun setData(data: List<PositionData>) {
             items?.clear()
             items?.addAll(data)
+            notifyDataSetChanged()
         }
     }
 }
