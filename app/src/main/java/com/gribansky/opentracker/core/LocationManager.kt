@@ -5,7 +5,6 @@ import android.location.Location
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.telephony.TelephonyManager
 import androidx.annotation.RequiresPermission
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationListener
@@ -16,12 +15,12 @@ import kotlin.math.abs
 
 private const val COLLECT_TIMEOUT = 1*60*1000L //1 мин
 private const val TIME_DIFFERENCE = 6*60*1000L //6 мин
-private const val POSITION_LIMIT = 2
+private const val POSITIONS_LIMIT = 2
 
 class LocationManager (
     private val fusedManager:FusedLocationProviderClient,
-    private val telephonyManager: TelephonyManager,
-    private val result: ((List<PositionData>) -> Unit)
+    private val result: ((List<PositionData>) -> Unit),
+    private val isFake: ((Boolean) ->Unit)? = null,
 ):ILocation, LocationListener, Runnable {
 
 
@@ -53,7 +52,7 @@ class LocationManager (
     override fun onLocationChanged(p0: Location) {
         if (isLocationTooOld(p0) || isFake(p0)) return
         positionList.add(PositionGpsData(gpsLocation = p0))
-        if (positionList.size > POSITION_LIMIT)stopGps()
+        if (positionList.size > POSITIONS_LIMIT)stopGps()
 
     }
 
@@ -89,10 +88,12 @@ class LocationManager (
     }
 
     private fun isFake(location: Location): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val fake = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             location.isMock
         } else {
             location.isFromMockProvider
         }
+        isFake?.invoke(fake)
+        return fake
     }
 }

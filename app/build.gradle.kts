@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization.plugin)
 }
 
 android {
@@ -50,6 +51,11 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.preference.ktx)
     implementation(libs.google.gms)
+    implementation(libs.kotlin.serialization)
+    implementation(libs.adapterdelegates4)
+    implementation(libs.cardview)
+
+
 
 
 

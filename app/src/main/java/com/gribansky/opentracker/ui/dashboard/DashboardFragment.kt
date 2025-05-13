@@ -14,10 +14,13 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.gribansky.opentracker.R
+import com.gribansky.opentracker.core.PositionData
 import com.gribansky.opentracker.core.TRACKER_CLIENT_BIND
 import com.gribansky.opentracker.core.TrackerService
 import com.gribansky.opentracker.databinding.FragmentDashboardBinding
+import com.hannesdorfmann.adapterdelegates4.ListDelegationAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -35,6 +38,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
+    private val hAdapter by lazy { HistoryAdapter() }
+
 
 
     private var _binding: FragmentDashboardBinding? = null
@@ -46,6 +51,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             mService = binder.getService()
             mBound = true
             scope?.observeTrackerState()
+            scope?.observeTrackerHistory()
         }
         override fun onServiceDisconnected(arg0: ComponentName) {
             mBound = false
@@ -57,6 +63,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentDashboardBinding.bind(view)
         //val dashboardViewModel = ViewModelProvider(this).get(DashboardViewModel::class.java)
+
+        binding.history.apply {
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+            adapter = this@DashboardFragment.hAdapter
+            itemAnimator = null
+        }
 
     }
 
@@ -111,6 +124,15 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
 
+    private fun CoroutineScope.observeTrackerHistory(){
+        this.launch {
+            mService.trackerHistory.collect{
+                hAdapter.setData(it)
+            }
+        }
+    }
+
+
     private fun requestPermissions() {
         val list = mutableListOf<String>()
 
@@ -144,4 +166,19 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
 
+    private inner class HistoryAdapter : ListDelegationAdapter<MutableList<Any>>() {
+
+
+        init {
+            items = mutableListOf()
+            delegatesManager.apply {
+                addDelegate(HistoryDelegate())
+            }
+        }
+
+        fun setData(data: List<PositionData>) {
+            items?.clear()
+            items?.addAll(data)
+        }
+    }
 }

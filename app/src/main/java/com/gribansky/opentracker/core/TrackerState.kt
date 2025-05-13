@@ -1,5 +1,8 @@
 package com.gribansky.opentracker.core
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class TrackerState (
     val gpsLastTimeReceived:Long? = null,
     val gsmLastTimeReceived:Long? = null,
