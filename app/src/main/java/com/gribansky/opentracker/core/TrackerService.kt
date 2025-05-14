@@ -69,18 +69,16 @@ class TrackerService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-
+        lock.acquire(5000)
         val fusedLocationManager = LocationServices.getFusedLocationProviderClient(this)
         //val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
         locationProvider = LocationManager(fusedLocationManager,::positionsReady)
        // _trackerState.update { prefManager.state }
 
-        Log.d(TAG, "onCreate")
-
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "onStartCommand:$intent")
+        lock.acquire(5000)
         handleAction(intent?.action ?: "")
         return startMode
     }
@@ -158,38 +156,39 @@ class TrackerService : Service() {
             }
 
             TRACKER_CLIENT_BIND -> {
+
                 val currentState = _trackerState.value
                 if (currentState.serviceLastStartTime == null) {
                     val sTime = restartTimer()
                     updateStartTime(sTime)
-                    addLogToHistory("SYS","restart timer")
+                    addLogToHistory("CLIENT_BIND","restart timer")
                 }
 
             }
 
             TRACKER_TIMER_ACTION -> {
+                lock.acquire(5000)
 
                 if (timeManager.isInWrkTimeNow()) {
 
                     val currentState = _trackerState.value
                     if (!currentState.isForeground) {
                         startForeground()
-                        addLogToHistory("SYS","start foreground")
+                        addLogToHistory("TIMER_ACTION","start foreground")
                         updateForegroundState(true)
 
                     }
-                    lock.acquire(2*60*1000)
+                    lock.acquire(90000)
                     locationProvider?.start()
-                    addLogToHistory("Timer","start collecting GPS")
+                    addLogToHistory("TIMER_ACTION","start collecting GPS")
 
 
                 } else {
-
                     val sTime = restartTimer()
                     updateStartTime(sTime)
-                    stopForeground()
-                    addLogToHistory("SYS","stop foreground")
+                    addLogToHistory("TIMER_ACTION","stop foreground")
                     updateForegroundState(false)
+                    stopForeground()
                 }
 
             }
@@ -256,16 +255,13 @@ class TrackerService : Service() {
 
 
     private fun positionsReady(pos:List<PositionData>){
-
         val p = pos.ifEmpty {
             listOf(PositionDataLog(
                 logTag = "GPS reciver:",
                 logMessage = "no points collected"
             ))
         }
-
         p.forEach { updateHistory(it) }
-
         lock.release()
     }
 
