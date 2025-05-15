@@ -102,7 +102,7 @@ class TrackerService : Service() {
         super.onDestroy()
         serviceScope.cancel("Service is destroying...")
         locationProvider?.stop()
-        prefManager.state = _trackerState.value
+        //prefManager.state = _trackerState.value
 
         while (lock.isHeld) {
             lock.release()
@@ -174,10 +174,15 @@ class TrackerService : Service() {
                     val currentState = _trackerState.value
                     if (!currentState.isForeground) {
                         startForeground()
-                        addLogToHistory("TIMER_ACTION","start foreground")
                         updateForegroundState(true)
+                        addLogToHistory("TIMER_ACTION","start foreground")
 
                     }
+                    if (currentState.serviceLastStartTime == null){
+                        updateStartTime(System.currentTimeMillis())
+                        addLogToHistory("TIMER_ACTION","last start time updated")
+                    }
+
                     lock.acquire(90000)
                     locationProvider?.start()
                     addLogToHistory("TIMER_ACTION","start collecting GPS")
@@ -207,7 +212,7 @@ class TrackerService : Service() {
 
     private fun updateForegroundState(isForeground: Boolean) {
         val currentState = _trackerState.value
-        val newState = currentState.copy(isForeground = true)
+        val newState = currentState.copy(isForeground = isForeground)
         _trackerState.update { newState }
     }
 
@@ -262,6 +267,8 @@ class TrackerService : Service() {
             ))
         }
         p.forEach { updateHistory(it) }
+
+
         lock.release()
     }
 
