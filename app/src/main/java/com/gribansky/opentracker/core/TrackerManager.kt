@@ -2,11 +2,13 @@ package com.gribansky.opentracker.core
 
 import android.text.format.DateFormat
 import com.gribansky.opentracker.BuildConfig
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,11 +35,30 @@ private const val OPEN_TRACKER_TYPE = 1
 
 class TrackerManager (private val dirPath:String) {
 
+    private var currentLogFile:File? = null
 
     private val scope = MainScope()
 
-    private val _commands = MutableSharedFlow<TrackerCommands>()
-    val commands: SharedFlow<TrackerCommands> = _commands.asSharedFlow()
+    private val handler = CoroutineExceptionHandler { _, exception ->
+        println("CoroutineExceptionHandler got $exception")
+    }
+
+    private val commands = MutableSharedFlow<List<String>>(extraBufferCapacity = 2, onBufferOverflow = BufferOverflow.DROP_LATEST)
+
+    init {
+
+        scope.launch (handler) {
+            commands.collect{
+                if (currentLogFile == null) currentLogFile= makeNewLogFile()
+                saveToFile(it)
+
+                currentLogFile?.renameTo(File(""))
+
+        }
+
+        }
+    }
+
 
 
     private val _trackerState = MutableStateFlow(TrackerState())
@@ -46,29 +67,23 @@ class TrackerManager (private val dirPath:String) {
 
     private var nextSentTime:Long = 0
 
-    private var currentLogFile:File? = null
+
 
 
     fun saveToLog(log:List<String>){
-
-        val s = scope.isActive
-
-        s.toString()
-        scope.launch {
-            if (currentLogFile == null) currentLogFile = makeNewLogFile()
-            saveToFile(log,currentLogFile!!)
-
-        }
+        commands.tryEmit(log)
     }
 
 
-    private suspend fun saveToFile(log:List<String>,file:File) = withContext(NonCancellable + Dispatchers.IO){
+    private suspend fun saveToFile(log:List<String>) = withContext(NonCancellable + Dispatchers.IO){
 
-        PrintWriter(file).use { w->
-            log.forEach {
-                w.println(it)
+        currentLogFile?.let {f->
+            PrintWriter(f).use { w->
+                log.forEach {
+                    w.println(it)
+                }
+                w.flush()
             }
-            w.flush()
         }
     }
 
