@@ -38,6 +38,7 @@ private const val TRACK_TIMER_CODE = 100
 class TrackerService : Service() {
 
 
+
     private val _trackerHistory = MutableStateFlow(emptyList<PositionData>())
     val trackerHistory: StateFlow<List<PositionData>> = _trackerHistory.asStateFlow()
 
@@ -53,6 +54,10 @@ class TrackerService : Service() {
     private val trackerHist = ArrayDeque<PositionData>()
 
     private var locationProvider:ILocation? = null
+
+    private val trackerLogManager:TrackerManager by lazy {
+        TrackerManager(getPathToLog())
+    }
 
     private val prefManager: IPrefManager by lazy {
         SharePrefManager(PreferenceManager.getDefaultSharedPreferences(this))
@@ -102,7 +107,7 @@ class TrackerService : Service() {
         super.onDestroy()
         serviceScope.cancel("Service is destroying...")
         locationProvider?.stop()
-        //prefManager.state = _trackerState.value
+        trackerLogManager.stop()
 
         while (lock.isHeld) {
             lock.release()
@@ -260,6 +265,14 @@ class TrackerService : Service() {
 
 
     private fun positionsReady(pos:List<PositionData>){
+
+        val forLog = pos.map { it.getDataInString() }
+
+        if (forLog.isNotEmpty())trackerLogManager.saveToLog(forLog)
+
+
+
+
         val p = pos.ifEmpty {
             listOf(PositionDataLog(
                 logTag = "GPS reciver:",
@@ -291,5 +304,9 @@ class TrackerService : Service() {
         ))
 
 
+    }
+
+    private fun getPathToLog():String{
+        return this.filesDir.absolutePath
     }
 }
