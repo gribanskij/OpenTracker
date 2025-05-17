@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.io.File
 
 
 const val TRACKER_TIMER_ACTION = "intent.action.TIMER_FIRED"
@@ -55,9 +56,8 @@ class TrackerService : Service() {
 
     private var locationProvider:ILocation? = null
 
-    private val trackerLogManager:TrackerManager by lazy {
-        TrackerManager(getPathToLog())
-    }
+    private lateinit var trackerLogManager:TrackerManager
+
 
     private val prefManager: IPrefManager by lazy {
         SharePrefManager(PreferenceManager.getDefaultSharedPreferences(this))
@@ -78,6 +78,7 @@ class TrackerService : Service() {
         val fusedLocationManager = LocationServices.getFusedLocationProviderClient(this)
         //val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
         locationProvider = LocationManager(fusedLocationManager,::positionsReady)
+        trackerLogManager =  TrackerManager(getPathToLog())
        // _trackerState.update { prefManager.state }
 
     }
@@ -307,6 +308,8 @@ class TrackerService : Service() {
     }
 
     private fun getPathToLog():String{
-        return this.filesDir.absolutePath
+        val logPath = File(filesDir,"trkLog")
+        if (!logPath.exists()) logPath.mkdir()
+        return logPath.absolutePath
     }
 }
