@@ -11,10 +11,11 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.os.PowerManager.WakeLock
 import android.os.SystemClock
-import android.util.Log
 import androidx.core.app.ServiceCompat
 import androidx.preference.PreferenceManager
 import com.google.android.gms.location.LocationServices
+import com.gribansky.opentracker.core.logManager.FileSaver
+import com.gribansky.opentracker.core.logManager.TrackerManager
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,7 +57,7 @@ class TrackerService : Service() {
 
     private var locationProvider:ILocation? = null
 
-    private lateinit var trackerLogManager:TrackerManager
+    private lateinit var trackerLogManager: TrackerManager
 
 
     private val prefManager: IPrefManager by lazy {
@@ -78,7 +79,7 @@ class TrackerService : Service() {
         val fusedLocationManager = LocationServices.getFusedLocationProviderClient(this)
         //val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
         locationProvider = LocationManager(fusedLocationManager,::positionsReady)
-        trackerLogManager =  TrackerManager(getPathToLog())
+        trackerLogManager =  TrackerManager(saver = FileSaver())
        // _trackerState.update { prefManager.state }
 
     }
@@ -269,7 +270,7 @@ class TrackerService : Service() {
 
         val forLog = pos.map { it.getDataInString() }
 
-        if (forLog.isNotEmpty())trackerLogManager.saveToLog(forLog)
+        if (forLog.isNotEmpty())trackerLogManager.saveToLog(getPathToLog(),forLog)
 
 
 

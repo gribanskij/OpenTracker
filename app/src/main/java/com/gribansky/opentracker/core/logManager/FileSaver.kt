@@ -1,16 +1,11 @@
-package com.gribansky.opentracker.core
+package com.gribansky.opentracker.core.logManager
 
 import android.text.format.DateFormat
 import com.gribansky.opentracker.BuildConfig
-import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileWriter
@@ -27,48 +22,27 @@ private const val OPEN_TRACKER_TYPE = 1
 private const val INIT_TIME_TO_CHANGE_FILE = 5 * 60 * 1000 //5 min
 private const val TIME_INTERVAL_TO_CHANGE_FILE = 60 * 60 * 1000 //60 min
 
-class TrackerManager(private val dirPath: String) {
+class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) {
+
 
     private var currentLogFile: File? = null
-
-    private val scope = MainScope()
-
-    private var nextSentTime: Long = System.currentTimeMillis() + INIT_TIME_TO_CHANGE_FILE
-
-    private val handler = CoroutineExceptionHandler { _, exception ->
-        println("CoroutineExceptionHandler got $exception")
-    }
-
-    private val commands = MutableSharedFlow<List<String>>(
-        extraBufferCapacity = 2,
-        onBufferOverflow = BufferOverflow.DROP_LATEST
-    )
-
-    init {
-        scope.launch(handler) {
-            commands.collect { log ->
-                handleLog(log)
-            }
-        }
-    }
+    private var nextRenameTime: Long = System.currentTimeMillis() + INIT_TIME_TO_CHANGE_FILE
 
 
-    fun saveToLog(log: List<String>) {
-        commands.tryEmit(log)
-    }
 
-    private suspend fun handleLog(log: List<String>) = coroutineScope {
-        if (currentLogFile == null) currentLogFile = makeNewLogFile()
+    suspend fun save(dirPath:String,log: List<String>) = coroutineScope {
+        if (currentLogFile == null) currentLogFile = makeNewLogFile(dirPath)
         saveToFile(log)
-        if (System.currentTimeMillis() > nextSentTime || abs(System.currentTimeMillis() - nextSentTime) > TIME_INTERVAL_TO_CHANGE_FILE) {
-            renameLogFile()
-            nextSentTime = System.currentTimeMillis() + TIME_INTERVAL_TO_CHANGE_FILE
+        if (System.currentTimeMillis() > nextRenameTime || abs(System.currentTimeMillis() - nextRenameTime) > TIME_INTERVAL_TO_CHANGE_FILE) {
+            renameLogFile(dirPath)
+            nextRenameTime = System.currentTimeMillis() + TIME_INTERVAL_TO_CHANGE_FILE
         }
     }
+
 
 
     private suspend fun saveToFile(log: List<String>) =
-        withContext(NonCancellable + Dispatchers.IO) {
+        withContext(NonCancellable + dispatcher) {
 
             currentLogFile?.let { f ->
                 FileWriter(f, true).use { w ->
@@ -80,7 +54,7 @@ class TrackerManager(private val dirPath: String) {
             }
         }
 
-    private suspend fun makeNewLogFile(): File = coroutineScope {
+    private suspend fun makeNewLogFile(dirPath:String): File = coroutineScope {
         val timePoint = DateFormat.format("yyyy-MM-dd kk-mm-ss", Date(System.currentTimeMillis()))
         val dataFileName = "$DATA_FILE_PREFIX$DATA_IMEI_CODE $timePoint.$DATA_FILE_EXT_WRK"
         val dataFile = File(dirPath, dataFileName)
@@ -88,7 +62,7 @@ class TrackerManager(private val dirPath: String) {
         return@coroutineScope dataFile
     }
 
-    private suspend fun addHeader(file: File) = withContext(NonCancellable + Dispatchers.IO) {
+    private suspend fun addHeader(file: File) = withContext(NonCancellable + dispatcher) {
         val header = getHeader()
         FileWriter(file).use {
             it.write(header)
@@ -109,17 +83,15 @@ class TrackerManager(private val dirPath: String) {
         }.toString()
     }
 
-    private suspend fun renameLogFile() = withContext(NonCancellable + Dispatchers.IO) {
+    private suspend fun renameLogFile(dirPath:String) = withContext(NonCancellable + dispatcher) {
         currentLogFile?.let { f ->
             val fileNameForSend = f.name.replaceFirst(DATA_FILE_EXT_WRK, DATA_FILE_EXT_TXT)
-            f.renameTo(File(dirPath,fileNameForSend))
+            f.renameTo(File(dirPath, fileNameForSend))
         }
         currentLogFile = null
 
     }
 
-    fun stop() {
-        scope.cancel()
-    }
+
 
 }
