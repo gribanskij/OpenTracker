@@ -113,10 +113,17 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 val sTime = if (it.serviceLastStartTime== null) "не определено" else timeFormat.format(Date(it.serviceLastStartTime))
                 val posTime = if (it.gpsLastTime == null) "не определено" else timeFormat.format(Date(it.gpsLastTime))
                 val status = if (it.isForeground)"работает" else "ожидает запуска"
+                val logTime = if (it.logTime== null) "не определено" else timeFormat.format(Date(it.logTime))
+                val ready = it.packetsReady?:"-"
+                val sent = it.packetsSent ?: "-"
 
                 val sb ="Время старта: $sTime \n" +
                         "Последняя точка в: $posTime \n" +
-                        "Статус трекера: $status"
+                        "Статус трекера: $status \n" +
+                        "Логирование: $logTime \n" +
+                        "Пакетов к отправке: $ready \n" +
+                        "Пакетов отправлено: $sent \n "
+
 
                 binding.textDashboard.text = sb
             }

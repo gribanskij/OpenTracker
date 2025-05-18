@@ -14,8 +14,10 @@ import android.os.SystemClock
 import androidx.core.app.ServiceCompat
 import androidx.preference.PreferenceManager
 import com.google.android.gms.location.LocationServices
-import com.gribansky.opentracker.core.logManager.FileSaver
-import com.gribansky.opentracker.core.logManager.TrackerManager
+import com.gribansky.opentracker.core.log.FileSaver
+import com.gribansky.opentracker.core.log.NetSender
+import com.gribansky.opentracker.core.log.LogManager
+import com.gribansky.opentracker.core.log.LogResult
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,7 +59,7 @@ class TrackerService : Service() {
 
     private var locationProvider:ILocation? = null
 
-    private lateinit var trackerLogManager: TrackerManager
+    private lateinit var logManager: LogManager
 
 
     private val prefManager: IPrefManager by lazy {
@@ -79,7 +81,7 @@ class TrackerService : Service() {
         val fusedLocationManager = LocationServices.getFusedLocationProviderClient(this)
         //val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
         locationProvider = LocationManager(fusedLocationManager,::positionsReady)
-        trackerLogManager =  TrackerManager(saver = FileSaver())
+        logManager =  LogManager(saver = FileSaver(), sender = NetSender())
        // _trackerState.update { prefManager.state }
 
     }
@@ -109,7 +111,7 @@ class TrackerService : Service() {
         super.onDestroy()
         serviceScope.cancel("Service is destroying...")
         locationProvider?.stop()
-        trackerLogManager.stop()
+        logManager.stop()
 
         while (lock.isHeld) {
             lock.release()
@@ -270,10 +272,10 @@ class TrackerService : Service() {
 
         val forLog = pos.map { it.getDataInString() }
 
-        if (forLog.isNotEmpty())trackerLogManager.saveToLog(getPathToLog(),forLog)
-
-
-
+        if (forLog.isNotEmpty()){
+            lock.acquire(30000)//30 сек
+            logManager.saveToLog(getPathToLog(),forLog,::logReady)
+        }
 
         val p = pos.ifEmpty {
             listOf(PositionDataLog(
@@ -282,9 +284,18 @@ class TrackerService : Service() {
             ))
         }
         p.forEach { updateHistory(it) }
-
-
         lock.release()
+    }
+
+    private fun logReady(result: LogResult){
+        updateLogState(result)
+        lock.release()
+    }
+
+    private fun updateLogState(logResult: LogResult) {
+        val currentState = _trackerState.value
+        val newState = currentState.copy(logTime = logResult.time, packetsReady = logResult.ready, packetsSent = logResult.sent)
+        _trackerState.update { newState }
     }
 
 

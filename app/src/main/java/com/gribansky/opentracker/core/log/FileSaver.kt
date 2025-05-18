@@ -1,4 +1,4 @@
-package com.gribansky.opentracker.core.logManager
+package com.gribansky.opentracker.core.log
 
 import android.text.format.DateFormat
 import com.gribansky.opentracker.BuildConfig
@@ -30,13 +30,15 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) {
 
 
 
-    suspend fun save(dirPath:String,log: List<String>) = coroutineScope {
+    suspend fun save(dirPath:String,log: List<String>):List<String> = coroutineScope {
         if (currentLogFile == null) currentLogFile = makeNewLogFile(dirPath)
         saveToFile(log)
         if (System.currentTimeMillis() > nextRenameTime || abs(System.currentTimeMillis() - nextRenameTime) > TIME_INTERVAL_TO_CHANGE_FILE) {
             renameLogFile(dirPath)
             nextRenameTime = System.currentTimeMillis() + TIME_INTERVAL_TO_CHANGE_FILE
         }
+        val packets = File(dirPath).listFiles()?.filter { it.name.contains(DATA_FILE_EXT_TXT) }?.map { it.absolutePath }?: emptyList()
+        return@coroutineScope packets
     }
 
 

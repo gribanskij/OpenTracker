@@ -13,4 +13,8 @@ data class TrackerState (
     val isForeground:Boolean = false,
     val gpsLastTime:Long? = null,
 
+    val logTime:Long? = null,
+    val packetsReady:Int? = null,
+    val packetsSent:Int? = null
+
 )
