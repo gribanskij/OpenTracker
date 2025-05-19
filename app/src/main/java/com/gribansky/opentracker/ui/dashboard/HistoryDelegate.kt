@@ -4,10 +4,10 @@ package com.gribansky.opentracker.ui.dashboard
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.gribansky.opentracker.core.PositionData
-import com.gribansky.opentracker.core.PositionDataLog
-import com.gribansky.opentracker.core.PositionGpsData
-import com.gribansky.opentracker.core.PositionGsmData
+import com.gribansky.opentracker.core.log.PositionData
+import com.gribansky.opentracker.core.log.PositionDataLog
+import com.gribansky.opentracker.core.log.PositionGpsData
+import com.gribansky.opentracker.core.log.PositionGsmData
 import com.gribansky.opentracker.databinding.HistoryItemBinding
 import com.hannesdorfmann.adapterdelegates4.AdapterDelegate
 import java.text.SimpleDateFormat
@@ -57,7 +57,7 @@ class HistoryDelegate: AdapterDelegate<MutableList<Any>>() {
             }
         }
 
-        private fun bindGps(p:PositionGpsData){
+        private fun bindGps(p: PositionGpsData){
 
             val time = dateFormat.format(Date(p.eventDate))
             val desc = "lat:${p.gpsLocation.latitude}, lon:${p.gpsLocation.longitude}"
@@ -68,7 +68,7 @@ class HistoryDelegate: AdapterDelegate<MutableList<Any>>() {
 
         }
 
-        private fun bindLog(p:PositionDataLog){
+        private fun bindLog(p: PositionDataLog){
 
             val time = dateFormat.format(Date(p.eventDate))
             val desc = "${p.logTag}:${p.logMessage}"
@@ -80,7 +80,7 @@ class HistoryDelegate: AdapterDelegate<MutableList<Any>>() {
 
         }
 
-        private fun bindGsm(p:PositionGsmData){
+        private fun bindGsm(p: PositionGsmData){
 
             val time = dateFormat.format(Date(p.eventDate))
             val desc = "???"

@@ -14,10 +14,9 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gribansky.opentracker.R
-import com.gribansky.opentracker.core.PositionData
+import com.gribansky.opentracker.core.log.PositionData
 import com.gribansky.opentracker.core.TRACKER_CLIENT_BIND
 import com.gribansky.opentracker.core.TrackerService
 import com.gribansky.opentracker.databinding.FragmentDashboardBinding

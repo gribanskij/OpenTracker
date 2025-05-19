@@ -1,4 +1,4 @@
-package com.gribansky.opentracker.core
+package com.gribansky.opentracker.core.log
 
 interface ILocation {
 

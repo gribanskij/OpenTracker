@@ -15,22 +15,29 @@ import androidx.core.app.ServiceCompat
 import androidx.preference.PreferenceManager
 import com.google.android.gms.location.LocationServices
 import com.gribansky.opentracker.core.log.FileSaver
-import com.gribansky.opentracker.core.log.NetSender
+import com.gribansky.opentracker.core.log.ILocation
+import com.gribansky.opentracker.core.log.LocationManager
 import com.gribansky.opentracker.core.log.LogManager
 import com.gribansky.opentracker.core.log.LogResult
-import kotlinx.coroutines.MainScope
+import com.gribansky.opentracker.core.log.NetSender
+import com.gribansky.opentracker.core.log.PositionData
+import com.gribansky.opentracker.core.log.PositionDataLog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.io.File
 
 
 const val TRACKER_TIMER_ACTION = "intent.action.TIMER_FIRED"
 const val TRACKER_CLIENT_BIND = "intent.action.CLIENT_BIND"
 const val TRACKER_LOCATION_POINT_INTERVAL = 5 * 60 * 1000L //5 минут
-
 private const val HISTORY_WINDOW = 60
 
 
@@ -42,6 +49,7 @@ private const val TRACK_TIMER_CODE = 100
 class TrackerService : Service() {
 
 
+    private val serviceScope = CoroutineScope(Dispatchers.Main.immediate)
 
     private val _trackerHistory = MutableStateFlow(emptyList<PositionData>())
     val trackerHistory: StateFlow<List<PositionData>> = _trackerHistory.asStateFlow()
@@ -49,18 +57,17 @@ class TrackerService : Service() {
     private val _trackerState = MutableStateFlow(TrackerState())
     val trackerState: StateFlow<TrackerState> = _trackerState.asStateFlow()
 
-    private val serviceScope = MainScope()
+    private val commands = MutableSharedFlow<String>(
+        extraBufferCapacity = 5,
+        onBufferOverflow = BufferOverflow.DROP_LATEST
+    )
+
+
     private val timeManager = TimeManager()
     private val startMode: Int = START_NOT_STICKY
     private val binder: IBinder = LocalBinder()
     private val allowRebind = true
-
     private val trackerHist = ArrayDeque<PositionData>()
-
-    private var locationProvider:ILocation? = null
-
-    private lateinit var logManager: LogManager
-
 
     private val prefManager: IPrefManager by lazy {
         SharePrefManager(PreferenceManager.getDefaultSharedPreferences(this))
@@ -78,11 +85,25 @@ class TrackerService : Service() {
     override fun onCreate() {
         super.onCreate()
         lock.acquire(5000)
-        val fusedLocationManager = LocationServices.getFusedLocationProviderClient(this)
-        //val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-        locationProvider = LocationManager(fusedLocationManager)
-        logManager =  LogManager(saver = FileSaver(), sender = NetSender())
-       // _trackerState.update { prefManager.state }
+
+        val logManager = LogManager(
+            locationProvider = LocationManager(LocationServices.getFusedLocationProviderClient(this)),
+            saver = FileSaver(),
+            sender = NetSender()
+        )
+
+        serviceScope.launch {
+            commands.collect {
+
+                lock.acquire(180000)
+                val result = logManager.startLogCollect(getPathToLog(), emptyList())
+                updateLogState(result)
+                result.points.forEach { updateHistory(it) }
+                lock.release()
+
+            }
+
+        }
 
     }
 
@@ -110,15 +131,11 @@ class TrackerService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         serviceScope.cancel("Service is destroying...")
-        locationProvider?.stop()
-        logManager.stop()
-
         while (lock.isHeld) {
             lock.release()
         }
 
     }
-
 
 
     private fun handleAction(action: String) {
@@ -129,7 +146,7 @@ class TrackerService : Service() {
                 val sTime = restartTimer()
                 updateStartTime(sTime)
 
-                addLogToHistory("SYS","app restarted")
+                addLogToHistory("SYS", "app restarted")
 
             }
 
@@ -150,7 +167,7 @@ class TrackerService : Service() {
                     updateForegroundState(false)
                 }
 
-                addLogToHistory("DATE","date changed")
+                addLogToHistory("DATE", "date changed")
             }
 
             Intent.ACTION_TIME_CHANGED -> {
@@ -161,7 +178,7 @@ class TrackerService : Service() {
                     updateForegroundState(false)
                 }
 
-                addLogToHistory("TIME","time changed")
+                addLogToHistory("TIME", "time changed")
             }
 
             TRACKER_CLIENT_BIND -> {
@@ -170,13 +187,12 @@ class TrackerService : Service() {
                 if (currentState.serviceLastStartTime == null) {
                     val sTime = restartTimer()
                     updateStartTime(sTime)
-                    addLogToHistory("CLIENT_BIND","restart timer")
+                    addLogToHistory("CLIENT_BIND", "restart timer")
                 }
 
             }
 
             TRACKER_TIMER_ACTION -> {
-                lock.acquire(5000)
 
                 if (timeManager.isInWrkTimeNow()) {
 
@@ -184,23 +200,21 @@ class TrackerService : Service() {
                     if (!currentState.isForeground) {
                         startForeground()
                         updateForegroundState(true)
-                        addLogToHistory("TIMER_ACTION","start foreground")
+                        addLogToHistory("TIMER_ACTION", "start foreground")
 
                     }
-                    if (currentState.serviceLastStartTime == null){
+                    if (currentState.serviceLastStartTime == null) {
                         updateStartTime(System.currentTimeMillis())
-                        addLogToHistory("TIMER_ACTION","last start time updated")
+                        addLogToHistory("TIMER_ACTION", "last start time updated")
                     }
-
-                    lock.acquire(90000)
-                    locationProvider?.start(::positionsReady)
-                    addLogToHistory("TIMER_ACTION","start collecting GPS")
+                    addLogToHistory("TIMER_ACTION", "start collecting GPS")
+                    commands.tryEmit("start")
 
 
                 } else {
                     val sTime = restartTimer()
                     updateStartTime(sTime)
-                    addLogToHistory("TIMER_ACTION","stop foreground")
+                    addLogToHistory("TIMER_ACTION", "stop foreground")
                     updateForegroundState(false)
                     stopForeground()
                 }
@@ -268,59 +282,39 @@ class TrackerService : Service() {
     }
 
 
-    private fun positionsReady(pos:List<PositionData>){
-
-        val forLog = pos.map { it.getDataInString() }
-
-        if (forLog.isNotEmpty()){
-            lock.acquire(30000)//30 сек
-            logManager.saveToLog(getPathToLog(),forLog,::logReady)
-        }
-
-        val p = pos.ifEmpty {
-            listOf(PositionDataLog(
-                logTag = "GPS reciver:",
-                logMessage = "no points collected"
-            ))
-        }
-        p.forEach { updateHistory(it) }
-        lock.release()
-    }
-
-    private fun logReady(result: LogResult){
-        updateLogState(result)
-        lock.release()
-    }
-
     private fun updateLogState(logResult: LogResult) {
         val currentState = _trackerState.value
-        val newState = currentState.copy(logTime = logResult.time, packetsReady = logResult.ready, packetsSent = logResult.sent)
+        val newState = currentState.copy(
+            logTime = logResult.time,
+            packetsReady = logResult.ready,
+            packetsSent = logResult.sent
+        )
         _trackerState.update { newState }
     }
 
 
-    private fun updateHistory(log:PositionData){
+    private fun updateHistory(log: PositionData) {
         if (trackerHist.count() == HISTORY_WINDOW) trackerHist.removeLastOrNull()
         trackerHist.addFirst(log)
-        _trackerHistory.update {trackerHist.toList() }
+        _trackerHistory.update { trackerHist.toList() }
     }
 
     inner class LocalBinder : Binder() {
         fun getService(): TrackerService = this@TrackerService
     }
 
-    private fun addLogToHistory(tag:String,mes:String){
+    private fun addLogToHistory(tag: String, mes: String) {
 
-        updateHistory(PositionDataLog(
-            logTag = tag,
-            logMessage = mes
-        ))
-
-
+        updateHistory(
+            PositionDataLog(
+                logTag = tag,
+                logMessage = mes
+            )
+        )
     }
 
-    private fun getPathToLog():String{
-        val logPath = File(filesDir,"trkLog")
+    private fun getPathToLog(): String {
+        val logPath = File(filesDir, "trkLog")
         if (!logPath.exists()) logPath.mkdir()
         return logPath.absolutePath
     }

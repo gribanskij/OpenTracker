@@ -1,69 +1,41 @@
 package com.gribansky.opentracker.core.log
 
-import android.Manifest
-import androidx.annotation.RequiresPermission
-import com.gribansky.opentracker.core.LocationManager
-import com.gribansky.opentracker.core.PositionData
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
+import kotlinx.coroutines.coroutineScope
 
 
-class LogManager(dispatcher: CoroutineDispatcher = Dispatchers.Main, private val saver:FileSaver, private val sender:NetSender) {
+class LogManager(private val locationProvider:ILocation, private val saver:FileSaver, private val sender:NetSender) {
 
-    private val scope = CoroutineScope(dispatcher)
 
-    private var result:((LogResult)->Unit)? = null
 
     private val handler = CoroutineExceptionHandler { _, exception ->
 
-        result?.invoke(LogResult(
-            errorDesc = exception.localizedMessage?:exception.message
-
-        ))
-
     }
 
-    private val commands = MutableSharedFlow<Pair<String,List<String>>>(
-        extraBufferCapacity = 5,
-        onBufferOverflow = BufferOverflow.DROP_LATEST
-    )
+    private val packetsForSend = mutableListOf<String>()
 
-    init {
-        scope.launch(handler) {
-            commands.collect { log ->
-                val packets = saver.save(log.first,log.second)
-                val sentPackets = sender.send(packets)
 
-                result?.invoke(
-                    LogResult(
-                        errorDesc = null,
-                        ready = packets.size,
-                        sent = sentPackets
-                    )
+    suspend fun startLogCollect(path:String, events: List<String>):LogResult = coroutineScope  {
+
+        val log = mutableListOf<String>()
+        val points = locationProvider.getPoints()
+        log.addAll(events)
+        log.addAll(points.map { it.getDataInString() })
+        val packets = saver.save(path,log)
+        val sentPackets = sender.send(packets)
+
+        return@coroutineScope LogResult(
+            errorDesc = null,
+            ready = packets.size,
+            sent = sentPackets,
+            points = points.ifEmpty {
+            listOf(
+                PositionDataLog(
+                    logTag = "GPS reciver:",
+                    logMessage = "no points collected"
                 )
-            }
+            )
         }
+        )
     }
-
-
-    fun saveToLog(path:String,log: List<String>,callback:(LogResult)->Unit) {
-        result = callback
-        commands.tryEmit(Pair(path,log))
-    }
-
-
-    fun stop() {
-        scope.cancel()
-    }
-
-
-
 }

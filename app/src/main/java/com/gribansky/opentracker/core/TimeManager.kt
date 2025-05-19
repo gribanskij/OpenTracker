@@ -2,7 +2,7 @@ package com.gribansky.opentracker.core
 
 import java.util.Calendar
 
-private const val FIRST_START_TIME_INTERVAL = 60 * 1000 //ms
+private const val FIRST_START_TIME_INTERVAL =  1000 //ms
 private const val START_WORK_HOUR = 8
 private const val END_WORK_HOUR = 20
 private const val IS_WORK_TIME_ONLY = false

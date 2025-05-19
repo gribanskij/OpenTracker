@@ -1,6 +1,7 @@
-package com.gribansky.opentracker.core
+package com.gribansky.opentracker.core.log
 
 import android.location.Location
+import com.gribansky.opentracker.core.CellTowerInfo
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -24,7 +25,7 @@ data class PositionGpsData(
     val eventDate: Long = System.currentTimeMillis(),
     val gpsLocation: Location
 
-    ):PositionData {
+    ): PositionData {
     override fun getDataInString(): String {
 
         return  "$GPS_DATA_TYPE," +
@@ -46,7 +47,7 @@ data class PositionGsmData(
     val eventDate: Long = System.currentTimeMillis(),
     val cellTower: CellTowerInfo
 
-):PositionData {
+): PositionData {
     override fun getDataInString(): String {
         TODO("Not yet implemented")
     }
@@ -59,7 +60,7 @@ data class PositionDataLog (
     val logMessage:String
 
 
-):PositionData {
+): PositionData {
     override fun getDataInString(): String {
         return  "$LOG_DATA_TYPE," +
                 "${sdf.format(Date(eventDate))}," +

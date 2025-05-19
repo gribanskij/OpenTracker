@@ -20,7 +20,7 @@ private const val DATA_IMEI_CODE = "123"
 private const val DATA_FORMAT_VERSION = 1
 private const val OPEN_TRACKER_TYPE = 1
 private const val INIT_TIME_TO_CHANGE_FILE = 5 * 60 * 1000 //5 min
-private const val TIME_INTERVAL_TO_CHANGE_FILE = 60 * 60 * 1000 //60 min
+private const val TIME_INTERVAL_TO_CHANGE_FILE = 5 * 60 * 1000
 
 class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) {
 
