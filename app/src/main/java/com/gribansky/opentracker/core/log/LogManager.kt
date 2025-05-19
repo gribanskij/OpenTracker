@@ -1,5 +1,9 @@
 package com.gribansky.opentracker.core.log
 
+import android.Manifest
+import androidx.annotation.RequiresPermission
+import com.gribansky.opentracker.core.LocationManager
+import com.gribansky.opentracker.core.PositionData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -8,6 +12,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 
 class LogManager(dispatcher: CoroutineDispatcher = Dispatchers.Main, private val saver:FileSaver, private val sender:NetSender) {
@@ -43,7 +49,6 @@ class LogManager(dispatcher: CoroutineDispatcher = Dispatchers.Main, private val
                         sent = sentPackets
                     )
                 )
-
             }
         }
     }
@@ -58,5 +63,7 @@ class LogManager(dispatcher: CoroutineDispatcher = Dispatchers.Main, private val
     fun stop() {
         scope.cancel()
     }
+
+
 
 }

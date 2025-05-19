@@ -2,7 +2,6 @@ package com.gribansky.opentracker.core
 
 interface ILocation {
 
-    fun start()
-    fun stop()
+    suspend fun getPoints():List<PositionData>
 
 }

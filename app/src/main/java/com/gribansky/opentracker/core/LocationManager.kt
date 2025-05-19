@@ -10,6 +10,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 import kotlin.math.abs
 
 
@@ -19,18 +21,37 @@ private const val POSITIONS_LIMIT = 2
 
 class LocationManager (
     private val fusedManager:FusedLocationProviderClient,
-    private val result: ((List<PositionData>) -> Unit),
-    private val isFake: ((Boolean) ->Unit)? = null,
 ):ILocation, LocationListener, Runnable {
-
 
     private val positionList = mutableListOf<PositionData>()
     private val handler = Handler(Looper.getMainLooper(), null)
 
+    private var isFake: ((Boolean) ->Unit)? = null
+    private var result: ((List<PositionData>) -> Unit)? = null
+
+
+
 
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-    override fun start() {
+    override suspend fun getPoints() = suspendCancellableCoroutine { continuation ->
+
+        start {
+            object : (List<PositionData>) -> Unit {
+                override fun invoke(p1: List<PositionData>) {
+                    continuation.resume(p1)
+                }
+            }
+            continuation.invokeOnCancellation {
+                stop()
+            }
+        }
+    }
+
+
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+    private fun start(callBack: (List<PositionData>) -> Unit) {
+        result = callBack
         positionList.clear()
 
         val builder = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY,1000).apply {
@@ -42,7 +63,7 @@ class LocationManager (
     }
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-    override fun stop() {
+    private fun stop() {
         handler.removeCallbacks(this)
         fusedManager.removeLocationUpdates(this)
     }
@@ -66,7 +87,7 @@ class LocationManager (
     private fun stopGps() {
         stop()
         if (positionList.isEmpty()) addLastKnownLocation()
-        result.invoke(positionList)
+        result?.invoke(positionList)
     }
 
 

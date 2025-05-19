@@ -80,7 +80,7 @@ class TrackerService : Service() {
         lock.acquire(5000)
         val fusedLocationManager = LocationServices.getFusedLocationProviderClient(this)
         //val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-        locationProvider = LocationManager(fusedLocationManager,::positionsReady)
+        locationProvider = LocationManager(fusedLocationManager)
         logManager =  LogManager(saver = FileSaver(), sender = NetSender())
        // _trackerState.update { prefManager.state }
 
@@ -193,7 +193,7 @@ class TrackerService : Service() {
                     }
 
                     lock.acquire(90000)
-                    locationProvider?.start()
+                    locationProvider?.start(::positionsReady)
                     addLogToHistory("TIMER_ACTION","start collecting GPS")
 
 
