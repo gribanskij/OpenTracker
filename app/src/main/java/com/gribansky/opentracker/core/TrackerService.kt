@@ -16,6 +16,7 @@ import androidx.preference.PreferenceManager
 import com.google.android.gms.location.LocationServices
 import com.gribansky.opentracker.core.log.FileSaver
 import com.gribansky.opentracker.core.log.ILocation
+import com.gribansky.opentracker.core.log.ILogManager
 import com.gribansky.opentracker.core.log.LocationManager
 import com.gribansky.opentracker.core.log.LogManager
 import com.gribansky.opentracker.core.log.LogResult
@@ -69,6 +70,9 @@ class TrackerService : Service() {
     private val allowRebind = true
     private val trackerHist = ArrayDeque<PositionData>()
 
+    private val events = mutableListOf<String>()
+
+
     private val prefManager: IPrefManager by lazy {
         SharePrefManager(PreferenceManager.getDefaultSharedPreferences(this))
     }
@@ -86,7 +90,7 @@ class TrackerService : Service() {
         super.onCreate()
         lock.acquire(5000)
 
-        val logManager = LogManager(
+        val logManager:ILogManager = LogManager(
             locationProvider = LocationManager(LocationServices.getFusedLocationProviderClient(this)),
             saver = FileSaver(),
             sender = NetSender()
@@ -94,13 +98,11 @@ class TrackerService : Service() {
 
         serviceScope.launch {
             commands.collect {
-
                 lock.acquire(180000)
-                val result = logManager.startLogCollect(getPathToLog(), emptyList())
+                val result = logManager.startLogCollect(getPathToLog(), buildList{addAll(events)},false)
                 updateLogState(result)
                 result.points.forEach { updateHistory(it) }
                 lock.release()
-
             }
 
         }
@@ -139,128 +141,78 @@ class TrackerService : Service() {
 
 
     private fun handleAction(action: String) {
-
         when (action) {
-
-            Intent.ACTION_BOOT_COMPLETED -> {
-                val sTime = restartTimer()
-                updateStartTime(sTime)
-
-                addLogToHistory("SYS", "app restarted")
-
-            }
-
-            Intent.ACTION_MY_PACKAGE_REPLACED -> {
-                val sTime = restartTimer()
-                updateStartTime(sTime)
-                if (!timeManager.isInWrkTimeNow()) {
-                    stopForeground()
-                    updateForegroundState(false)
-                }
-            }
-
-            Intent.ACTION_DATE_CHANGED -> {
-                val sTime = restartTimer()
-                updateStartTime(sTime)
-                if (!timeManager.isInWrkTimeNow()) {
-                    stopForeground()
-                    updateForegroundState(false)
-                }
-
-                addLogToHistory("DATE", "date changed")
-            }
-
-            Intent.ACTION_TIME_CHANGED -> {
-                val sTime = restartTimer()
-                updateStartTime(sTime)
-                if (!timeManager.isInWrkTimeNow()) {
-                    stopForeground()
-                    updateForegroundState(false)
-                }
-
-                addLogToHistory("TIME", "time changed")
-            }
-
-            TRACKER_CLIENT_BIND -> {
-
-                val currentState = _trackerState.value
-                if (currentState.serviceLastStartTime == null) {
-                    val sTime = restartTimer()
-                    updateStartTime(sTime)
-                    addLogToHistory("CLIENT_BIND", "restart timer")
-                }
-
-            }
-
-            TRACKER_TIMER_ACTION -> {
-
-                if (timeManager.isInWrkTimeNow()) {
-
-                    val currentState = _trackerState.value
-                    if (!currentState.isForeground) {
-                        startForeground()
-                        updateForegroundState(true)
-                        addLogToHistory("TIMER_ACTION", "start foreground")
-
-                    }
-                    if (currentState.serviceLastStartTime == null) {
-                        updateStartTime(System.currentTimeMillis())
-                        addLogToHistory("TIMER_ACTION", "last start time updated")
-                    }
-                    addLogToHistory("TIMER_ACTION", "start collecting GPS")
-                    commands.tryEmit("start")
-
-
-                } else {
-                    val sTime = restartTimer()
-                    updateStartTime(sTime)
-                    addLogToHistory("TIMER_ACTION", "stop foreground")
-                    updateForegroundState(false)
-                    stopForeground()
-                }
-
-            }
-
-            else -> {
-
-            }
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED,
+            Intent.ACTION_DATE_CHANGED,
+            Intent.ACTION_TIME_CHANGED -> handleSystemAction(action)
+            TRACKER_CLIENT_BIND -> handleClientBind()
+            TRACKER_TIMER_ACTION -> handleTimerAction()
         }
     }
 
-    private fun updateStartTime(sTime: Long) {
-        val currentState = _trackerState.value
-        val newState = currentState.copy(serviceLastStartTime = sTime)
-        _trackerState.update { newState }
-    }
 
-    private fun updateForegroundState(isForeground: Boolean) {
-        val currentState = _trackerState.value
-        val newState = currentState.copy(isForeground = isForeground)
-        _trackerState.update { newState }
-    }
-
-    private fun restartTimer(): Long {
-        val sTime = timeManager.getNextTimePoint()
-        restartTimer(sTime)
-        return sTime
-    }
-
-    private fun restartTimer(
-        futureTriggerTime: Long,
-        interval: Long = TRACKER_LOCATION_POINT_INTERVAL
-    ) {
-        val intent = Intent(this, TrackerReceiver::class.java).apply {
-            action = TRACKER_TIMER_ACTION
+    private fun handleSystemAction(action: String) {
+        val sTime = restartTimer()
+        updateStartTime(sTime)
+        if (action != Intent.ACTION_BOOT_COMPLETED && !timeManager.isInWrkTimeNow()) {
+            stopForeground()
+            updateForegroundState(false)
         }
+        if (action == Intent.ACTION_DATE_CHANGED || action == Intent.ACTION_TIME_CHANGED) {
+            addLogToHistory(action.substringAfterLast('.'), "changed")
+        }
+    }
+
+
+    private fun handleClientBind() {
+        if (_trackerState.value.serviceLastStartTime == null) {
+            updateStartTime(restartTimer())
+            addLogToHistory("CLIENT_BIND", "restart timer")
+        }
+    }
+
+
+    private fun handleTimerAction() {
+        if (timeManager.isInWrkTimeNow()) {
+            if (!_trackerState.value.isForeground) {
+                startForeground()
+                updateForegroundState(true)
+                addLogToHistory("TIMER_ACTION", "start foreground")
+            }
+            if (_trackerState.value.serviceLastStartTime == null) {
+                updateStartTime(System.currentTimeMillis())
+                addLogToHistory("TIMER_ACTION", "last start time updated")
+            }
+            addLogToHistory("TIMER_ACTION", "start collecting GPS")
+            commands.tryEmit("start")
+        } else {
+            updateStartTime(restartTimer())
+            addLogToHistory("TIMER_ACTION", "stop foreground")
+            updateForegroundState(false)
+            stopForeground()
+        }
+    }
+
+    private fun updateStartTime(sTime: Long) =
+        _trackerState.update { it.copy(serviceLastStartTime = sTime) }
+
+
+    private fun updateForegroundState(isForeground: Boolean) =
+        _trackerState.update { it.copy(isForeground = isForeground) }
+
+    private fun restartTimer(): Long =
+        timeManager.getNextTimePoint().also { restartTimer(it) }
+
+    private fun restartTimer(futureTriggerTime: Long, interval: Long = TRACKER_LOCATION_POINT_INTERVAL) {
+        val intent = Intent(this, TrackerReceiver::class.java).apply { action = TRACKER_TIMER_ACTION }
         val tTime = SystemClock.elapsedRealtime() + futureTriggerTime - System.currentTimeMillis()
-        val pIntent = PendingIntent.getBroadcast(
-            this,
-            TRACK_TIMER_CODE,
-            intent,
+        PendingIntent.getBroadcast(
+            this, TRACK_TIMER_CODE, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        (getSystemService(ALARM_SERVICE) as AlarmManager).apply {
-            setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, tTime, interval, pIntent)
+        ).let { pIntent ->
+            (getSystemService(ALARM_SERVICE) as AlarmManager).setRepeating(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP, tTime, interval, pIntent)
         }
     }
 

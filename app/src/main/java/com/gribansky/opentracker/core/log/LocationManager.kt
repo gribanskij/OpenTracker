@@ -13,8 +13,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.math.abs
 
-private const val COLLECT_TIMEOUT = 1 * 60 * 1000L //1 мин
-private const val TIME_DIFFERENCE = 6 * 60 * 1000L //6 мин
+private const val COLLECT_TIMEOUT = 60_000L // 1 минута в миллисекундах
+private const val TIME_DIFFERENCE = 6 * 60 * 1000L // 6 минут в миллисекундах
 private const val POSITIONS_LIMIT = 2
 
 @SuppressLint("MissingPermission")
@@ -30,28 +30,26 @@ class LocationManager(
 
     private val locListener = LocationListener { handleLocationPoint(it) }
 
-    private var isFake: ((Boolean) -> Unit)? = null
+    private var isFakeCallback: ((Boolean) -> Unit)? = null
 
-    private var result: ((List<PositionData>) -> Unit)? = null
+    private var resultCallback: ((List<PositionData>) -> Unit)? = null
 
 
     override suspend fun getPoints() = suspendCancellableCoroutine { continuation ->
 
-        start {
-            object : (List<PositionData>) -> Unit {
-                override fun invoke(p1: List<PositionData>) {
-                    continuation.resume(p1)
-                }
+        start { positions ->
+            if (continuation.isActive) {
+                continuation.resume(positions)
             }
-            continuation.invokeOnCancellation {
-                stop()
-            }
+        }
+        continuation.invokeOnCancellation {
+            stop()
         }
     }
 
 
     private fun start(callBack: (List<PositionData>) -> Unit) {
-        result = callBack
+        resultCallback = callBack
         positionList.clear()
 
         val builder = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000).apply {
@@ -70,10 +68,7 @@ class LocationManager(
 
     private fun handleLocationPoint(it: Location) {
         if (isLocationTooOld(it)) return
-        if (isFake(it)) {
-            isFake?.invoke(true)
-            return
-        } else isFake?.invoke(false)
+        if (isFake(it)) return
         positionList.add(PositionGpsData(gpsLocation = it))
         if (positionList.size > POSITIONS_LIMIT) stopWork()
     }
@@ -86,15 +81,14 @@ class LocationManager(
     }
 
     private fun sendResult() {
-        result?.invoke(positionList)
+        resultCallback?.invoke(positionList)
     }
 
 
     private fun addLastKnownLocation() {
         if (positionList.isNotEmpty())return
         val request = fusedManager.lastLocation
-        while (!request.isComplete) {
-        }
+        while (!request.isComplete) { }
         val loc: Location? = request.result
         if (loc != null && !isLocationTooOld(loc) && !isFake(loc)) {
             positionList.add(PositionGpsData(gpsLocation = loc))
@@ -108,12 +102,12 @@ class LocationManager(
     }
 
     private fun isFake(location: Location): Boolean {
-        val fake = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val fakeStatus = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             location.isMock
         } else {
             location.isFromMockProvider
         }
-        isFake?.invoke(fake)
-        return fake
+        isFakeCallback?.invoke(fakeStatus)
+        return fakeStatus
     }
 }

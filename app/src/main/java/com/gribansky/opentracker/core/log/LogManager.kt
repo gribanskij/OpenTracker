@@ -4,7 +4,8 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.coroutineScope
 
 
-class LogManager(private val locationProvider:ILocation, private val saver:FileSaver, private val sender:NetSender) {
+class LogManager(private val locationProvider:ILocation, private val saver:IFileSaver, private val sender:INetSender) :
+    ILogManager {
 
 
 
@@ -15,27 +16,45 @@ class LogManager(private val locationProvider:ILocation, private val saver:FileS
     private val packetsForSend = mutableListOf<String>()
 
 
-    suspend fun startLogCollect(path:String, events: List<String>):LogResult = coroutineScope  {
+    override suspend fun startLogCollect(
+        path: String,
+        events: List<String>,
+        now: Boolean
+    ): LogResult = coroutineScope {
+        var points = emptyList<PositionData>()
 
-        val log = mutableListOf<String>()
-        val points = locationProvider.getPoints()
-        log.addAll(events)
-        log.addAll(points.map { it.getDataInString() })
-        val packets = saver.save(path,log)
-        val sentPackets = sender.send(packets)
+        val logEntries = if (now) {
+            // Если now == true, используем только события
+            buildList {
+                addAll(events)
+            }
+        } else {
+            // Иначе собираем точки и объединяем с событиями
+            points = locationProvider.getPoints()
+            buildList {
+                addAll(events)
+                addAll(points.map { it.getDataInString() })
+            }
+        }
 
-        return@coroutineScope LogResult(
+        // Сохраняем лог в файл
+        val packets = saver.save(path, logEntries, now)
+        // Отправляем пакеты
+        val sentPackets = sender.send(packets, now)
+
+        // Формируем результат
+        LogResult(
             errorDesc = null,
             ready = packets.size,
             sent = sentPackets,
             points = points.ifEmpty {
-            listOf(
-                PositionDataLog(
-                    logTag = "GPS reciver:",
-                    logMessage = "no points collected"
+                listOf(
+                    PositionDataLog(
+                        logTag = "GPS receiver:",
+                        logMessage = "no points collected"
+                    )
                 )
-            )
-        }
+            }
         )
     }
 }

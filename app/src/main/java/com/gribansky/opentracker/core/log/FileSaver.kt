@@ -22,7 +22,7 @@ private const val OPEN_TRACKER_TYPE = 1
 private const val INIT_TIME_TO_CHANGE_FILE = 5 * 60 * 1000 //5 min
 private const val TIME_INTERVAL_TO_CHANGE_FILE = 5 * 60 * 1000
 
-class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) {
+class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : IFileSaver {
 
 
     private var currentLogFile: File? = null
@@ -30,17 +30,25 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) {
 
 
 
-    suspend fun save(dirPath:String,log: List<String>):List<String> = coroutineScope {
-        if (currentLogFile == null) currentLogFile = makeNewLogFile(dirPath)
-        saveToFile(log)
-        if (System.currentTimeMillis() > nextRenameTime || abs(System.currentTimeMillis() - nextRenameTime) > TIME_INTERVAL_TO_CHANGE_FILE) {
-            renameLogFile(dirPath)
-            nextRenameTime = System.currentTimeMillis() + TIME_INTERVAL_TO_CHANGE_FILE
+    override suspend fun save(dirPath:String, log: List<String>, makeNow:Boolean):List<String> = coroutineScope {
+        if (currentLogFile == null){
+            currentLogFile = makeNewLogFile(dirPath)
         }
-        val packets = File(dirPath).listFiles()?.filter { it.name.contains(DATA_FILE_EXT_TXT) }?.map { it.absolutePath }?: emptyList()
-        return@coroutineScope packets
-    }
+        saveToFile(log)
 
+        if (makeNow){
+            renameLogFile(dirPath)
+        } else {
+            if (System.currentTimeMillis() > nextRenameTime || abs(System.currentTimeMillis() - nextRenameTime) > TIME_INTERVAL_TO_CHANGE_FILE) {
+                renameLogFile(dirPath)
+                nextRenameTime = System.currentTimeMillis() + TIME_INTERVAL_TO_CHANGE_FILE
+            }
+        }
+
+
+        // Возвращаем список файлов с расширением .txt в директории
+        return@coroutineScope File(dirPath).listFiles()?.filter { it.name.endsWith(DATA_FILE_EXT_TXT) }?.map { it.absolutePath } ?: emptyList()
+    }
 
 
     private suspend fun saveToFile(log: List<String>) =
@@ -72,18 +80,14 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) {
         }
     }
 
-    private fun getHeader(): String {
-        return StringBuilder().apply {
-            append(DATA_FORMAT_VERSION)
-            append(",")
-            append(OPEN_TRACKER_TYPE)
-            append(",")
-            append(BuildConfig.VERSION_CODE)
-            append(",")
-            append(DATA_IMEI_CODE)
-            append("\n")
-        }.toString()
-    }
+    private fun getHeader(): String =
+        buildString {
+            append(DATA_FORMAT_VERSION).append(",")
+            append(OPEN_TRACKER_TYPE).append(",")
+            append(BuildConfig.VERSION_CODE).append(",")
+            append(DATA_IMEI_CODE).append("\n")
+        }
+
 
     private suspend fun renameLogFile(dirPath:String) = withContext(NonCancellable + dispatcher) {
         currentLogFile?.let { f ->

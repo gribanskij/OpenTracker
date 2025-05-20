@@ -92,8 +92,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
 
-    private fun bindToService(){
-
+    private fun bindToService() {
         val intent = Intent(requireActivity(), TrackerService::class.java).apply {
             action = TRACKER_CLIENT_BIND
         }
@@ -101,39 +100,41 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         requireActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
 
-    private fun unBindFromService(){
-        requireActivity().unbindService(connection)
+    private fun unBindFromService() {
+        if (mBound) {
+            requireActivity().unbindService(connection)
+            mBound = false
+        }
     }
 
-    private fun CoroutineScope.observeTrackerState(){
-        this.launch {
-            mService.trackerState.collect{
+    private fun CoroutineScope.observeTrackerState() {
+        launch {
+            mService.trackerState.collect { state ->
+                val sTime = state.serviceLastStartTime?.let { timeFormat.format(Date(it)) } ?: "не определено"
+                val posTime = state.gpsLastTime?.let { timeFormat.format(Date(it)) } ?: "не определено"
+                val status = if (state.isForeground) "работает" else "ожидает запуска"
+                val logTimeStr = state.logTime?.let { timeFormat.format(Date(it)) } ?: "не определено"
+                val readyPackets = state.packetsReady ?: "-"
+                val sentPackets = state.packetsSent ?: "-"
 
-                val sTime = if (it.serviceLastStartTime== null) "не определено" else timeFormat.format(Date(it.serviceLastStartTime))
-                val posTime = if (it.gpsLastTime == null) "не определено" else timeFormat.format(Date(it.gpsLastTime))
-                val status = if (it.isForeground)"работает" else "ожидает запуска"
-                val logTime = if (it.logTime== null) "не определено" else timeFormat.format(Date(it.logTime))
-                val ready = it.packetsReady?:"-"
-                val sent = it.packetsSent ?: "-"
-
-                val sb ="Время старта: $sTime \n" +
-                        "Последняя точка в: $posTime \n" +
-                        "Статус трекера: $status \n" +
-                        "Логирование: $logTime \n" +
-                        "Пакетов к отправке: $ready \n" +
-                        "Пакетов отправлено: $sent \n "
-
+                val sb =
+                    "Время старта: $sTime\n" +
+                            "Последняя точка в: $posTime\n" +
+                            "Статус трекера: $status\n" +
+                            "Логирование: $logTimeStr\n" +
+                            "Пакетов к отправке: $readyPackets\n" +
+                            "Пакетов отправлено: $sentPackets"
 
                 binding.textDashboard.text = sb
+
             }
         }
     }
 
-
-    private fun CoroutineScope.observeTrackerHistory(){
-        this.launch {
-            mService.trackerHistory.collect{
-                hAdapter.setData(it)
+    private fun CoroutineScope.observeTrackerHistory() {
+        launch {
+            mService.trackerHistory.collect { data ->
+                hAdapter.setData(data)
             }
         }
     }

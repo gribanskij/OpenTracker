@@ -26,7 +26,8 @@ class TimeManager {
     }
 
     private fun isWrkTime(calendar: Calendar): Boolean {
-        return calendar[Calendar.HOUR_OF_DAY] in START_WORK_HOUR until END_WORK_HOUR
+        val hour = calendar[Calendar.HOUR_OF_DAY]
+        return hour in START_WORK_HOUR until END_WORK_HOUR
 
     }
 
@@ -36,45 +37,56 @@ class TimeManager {
         val day = cal[Calendar.DAY_OF_MONTH]
         val year = cal[Calendar.YEAR]
 
-        var isWrkDay = !(dayOfWeek == Calendar.SUNDAY || dayOfWeek == Calendar.SATURDAY)
+        var isWorkDay = !(dayOfWeek == Calendar.SUNDAY || dayOfWeek == Calendar.SATURDAY)
 
 
         // исключения
-        if (isWrkDay) {
-            //рабочие дни - праздники
-            if ((month == Calendar.JANUARY && year == 2025) && (day <= 3 || day == 6 || day == 7 || day == 8)) isWrkDay = false
-            else if ((month == Calendar.MAY && year == 2025 ) && (day == 1 || day == 2 || day == 8 || day == 9 )) isWrkDay = false
-            else if ((month == Calendar.JUNE && year == 2025 ) && (day == 12 || day == 13)) isWrkDay = false
-            else if ((month == Calendar.NOVEMBER && year == 2025) && (day == 3 || day == 4)) isWrkDay = false
-            else if ((month == Calendar.DECEMBER && year == 2025) && (day == 31)) isWrkDay = false
+        if (isWorkDay) {
+            // Праздничные дни (2025)
+            when {
+                month == Calendar.JANUARY && year == 2025 && (day <= 3 || day in listOf(6,7,8)) -> isWorkDay = false
+                month == Calendar.MAY && year == 2025 && (day in listOf(1,2,8,9)) -> isWorkDay = false
+                month == Calendar.JUNE && year == 2025 && (day in listOf(12,13)) -> isWorkDay = false
+                month == Calendar.NOVEMBER && year == 2025 && (day in listOf(3,4)) -> isWorkDay = false
+                month == Calendar.DECEMBER && year == 2025 && day == 31 -> isWorkDay = false
+            }
 
         } else {
             // выходные - рабочие
-            if ((month == Calendar.NOVEMBER && year == 2025) && (day == 1)) isWrkDay = true
+            if ((month == Calendar.NOVEMBER && year == 2025) && (day == 1)) isWorkDay = true
         }
 
-        return isWrkDay
+        return isWorkDay
     }
 
     private fun getNextWorkDayTimePointStart():Long{
 
         val calendar = Calendar.getInstance()
-        val hourNow = calendar[Calendar.HOUR_OF_DAY]
 
-        if (hourNow > START_WORK_HOUR){
-            calendar.add(Calendar.DAY_OF_MONTH,1)
-            calendar.time
+        // Если сейчас после начала рабочего времени, переходим на следующий день
+        if (calendar[Calendar.HOUR_OF_DAY] >= START_WORK_HOUR) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+            // Обнуляем время для следующего дня
+            resetToStartOfWorkHours(calendar)
+        } else {
+            // Если сейчас до начала рабочего времени, устанавливаем на сегодня в START_WORK_HOUR
+            resetToStartOfWorkHours(calendar)
         }
 
-        while (!isWrkDay(calendar)){
-            calendar.add(Calendar.DAY_OF_MONTH,1)
-            calendar.time
+        // Ищем следующий рабочий день
+        while (!isWrkDay(calendar)) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+            resetToStartOfWorkHours(calendar)
         }
 
-        calendar[Calendar.HOUR_OF_DAY] = START_WORK_HOUR
-        calendar[Calendar.MINUTE] = 0
-        calendar[Calendar.SECOND] = 0
-        return calendar.time.time
-
+        return calendar.timeInMillis
     }
+
+    private fun resetToStartOfWorkHours(cal: Calendar) {
+        cal.set(Calendar.HOUR_OF_DAY, START_WORK_HOUR)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+    }
+
 }
