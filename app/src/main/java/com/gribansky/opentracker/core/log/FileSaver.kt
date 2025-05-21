@@ -5,13 +5,11 @@ import com.gribansky.opentracker.BuildConfig
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileWriter
 import java.util.Date
 import kotlin.math.abs
-
 
 private const val DATA_FILE_EXT_WRK = "wrk"
 private const val DATA_FILE_EXT_TXT = "txt"
@@ -24,34 +22,26 @@ private const val TIME_INTERVAL_TO_CHANGE_FILE = 5 * 60 * 1000
 
 class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : IFileSaver {
 
-
     private var currentLogFile: File? = null
     private var nextRenameTime: Long = System.currentTimeMillis() + INIT_TIME_TO_CHANGE_FILE
 
-
-
-    override suspend fun save(dirPath:String, log: List<String>, makeNow:Boolean):Result<List<String>> {
+    override suspend fun save(dirPath: String, log: List<String>, makeNow: Boolean): Result<List<String>> {
         return runCatching {
             if (currentLogFile == null) {
                 currentLogFile = makeNewLogFile(dirPath)
             }
             saveToFile(log)
 
-            if (makeNow) {
+            if (makeNow || System.currentTimeMillis() > nextRenameTime || abs(System.currentTimeMillis() - nextRenameTime) > TIME_INTERVAL_TO_CHANGE_FILE) {
                 renameLogFile(dirPath)
-            } else {
-                if (System.currentTimeMillis() > nextRenameTime || abs(System.currentTimeMillis() - nextRenameTime) > TIME_INTERVAL_TO_CHANGE_FILE) {
-                    renameLogFile(dirPath)
-                    nextRenameTime = System.currentTimeMillis() + TIME_INTERVAL_TO_CHANGE_FILE
-                }
+                nextRenameTime = System.currentTimeMillis() + TIME_INTERVAL_TO_CHANGE_FILE
             }
             currentLogFile = null
 
             // Возвращаем список файлов с расширением .txt в директории
-           File(dirPath).listFiles()?.filter { it.name.endsWith(DATA_FILE_EXT_TXT) }?.map { it.absolutePath } ?: emptyList()
+            File(dirPath).listFiles()?.filter { it.name.endsWith(DATA_FILE_EXT_TXT) }?.map { it.absolutePath } ?: emptyList()
         }
     }
-
 
     private suspend fun saveToFile(log: List<String>) =
         withContext(NonCancellable + dispatcher) {
@@ -65,14 +55,13 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : 
             }
         }
 
-    private suspend fun makeNewLogFile(dirPath:String): File {
+    private suspend fun makeNewLogFile(dirPath: String): File {
         val timePoint = DateFormat.format("yyyy-MM-dd kk-mm-ss", Date(System.currentTimeMillis()))
         val dataFileName = "$DATA_FILE_PREFIX$DATA_IMEI_CODE $timePoint.$DATA_FILE_EXT_WRK"
         val dataFile = File(dirPath, dataFileName)
         addHeader(dataFile)
         return dataFile
     }
-
 
     private suspend fun addHeader(file: File) = withContext(NonCancellable + dispatcher) {
         val header = getHeader()
@@ -90,8 +79,7 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : 
             append(DATA_IMEI_CODE).append("\n")
         }
 
-
-    private suspend fun renameLogFile(dirPath:String) = withContext(NonCancellable + dispatcher) {
+    private suspend fun renameLogFile(dirPath: String) = withContext(NonCancellable + dispatcher) {
         currentLogFile?.let { f ->
             val fileNameForSend = f.name.replaceFirst(DATA_FILE_EXT_WRK, DATA_FILE_EXT_TXT)
             f.renameTo(File(dirPath, fileNameForSend))
