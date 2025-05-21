@@ -30,30 +30,31 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : 
 
 
 
-    override suspend fun save(dirPath:String, log: List<String>, makeNow:Boolean):List<String> = coroutineScope {
-        if (currentLogFile == null){
-            currentLogFile = makeNewLogFile(dirPath)
-        }
-        saveToFile(log)
-
-        if (makeNow){
-            renameLogFile(dirPath)
-        } else {
-            if (System.currentTimeMillis() > nextRenameTime || abs(System.currentTimeMillis() - nextRenameTime) > TIME_INTERVAL_TO_CHANGE_FILE) {
-                renameLogFile(dirPath)
-                nextRenameTime = System.currentTimeMillis() + TIME_INTERVAL_TO_CHANGE_FILE
+    override suspend fun save(dirPath:String, log: List<String>, makeNow:Boolean):Result<List<String>> {
+        return runCatching {
+            if (currentLogFile == null) {
+                currentLogFile = makeNewLogFile(dirPath)
             }
+            saveToFile(log)
+
+            if (makeNow) {
+                renameLogFile(dirPath)
+            } else {
+                if (System.currentTimeMillis() > nextRenameTime || abs(System.currentTimeMillis() - nextRenameTime) > TIME_INTERVAL_TO_CHANGE_FILE) {
+                    renameLogFile(dirPath)
+                    nextRenameTime = System.currentTimeMillis() + TIME_INTERVAL_TO_CHANGE_FILE
+                }
+            }
+            currentLogFile = null
+
+            // Возвращаем список файлов с расширением .txt в директории
+           File(dirPath).listFiles()?.filter { it.name.endsWith(DATA_FILE_EXT_TXT) }?.map { it.absolutePath } ?: emptyList()
         }
-
-
-        // Возвращаем список файлов с расширением .txt в директории
-        return@coroutineScope File(dirPath).listFiles()?.filter { it.name.endsWith(DATA_FILE_EXT_TXT) }?.map { it.absolutePath } ?: emptyList()
     }
 
 
     private suspend fun saveToFile(log: List<String>) =
         withContext(NonCancellable + dispatcher) {
-
             currentLogFile?.let { f ->
                 FileWriter(f, true).use { w ->
                     log.forEach {
@@ -64,13 +65,14 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : 
             }
         }
 
-    private suspend fun makeNewLogFile(dirPath:String): File = coroutineScope {
+    private suspend fun makeNewLogFile(dirPath:String): File {
         val timePoint = DateFormat.format("yyyy-MM-dd kk-mm-ss", Date(System.currentTimeMillis()))
         val dataFileName = "$DATA_FILE_PREFIX$DATA_IMEI_CODE $timePoint.$DATA_FILE_EXT_WRK"
         val dataFile = File(dirPath, dataFileName)
         addHeader(dataFile)
-        return@coroutineScope dataFile
+        return dataFile
     }
+
 
     private suspend fun addHeader(file: File) = withContext(NonCancellable + dispatcher) {
         val header = getHeader()
@@ -94,10 +96,5 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : 
             val fileNameForSend = f.name.replaceFirst(DATA_FILE_EXT_WRK, DATA_FILE_EXT_TXT)
             f.renameTo(File(dirPath, fileNameForSend))
         }
-        currentLogFile = null
-
     }
-
-
-
 }

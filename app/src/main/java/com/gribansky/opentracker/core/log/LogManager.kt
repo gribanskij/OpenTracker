@@ -1,7 +1,7 @@
 package com.gribansky.opentracker.core.log
 
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.coroutineScope
+
+import kotlinx.coroutines.supervisorScope
 
 
 class LogManager(private val locationProvider:ILocation, private val saver:IFileSaver, private val sender:INetSender) :
@@ -9,18 +9,12 @@ class LogManager(private val locationProvider:ILocation, private val saver:IFile
 
 
 
-    private val handler = CoroutineExceptionHandler { _, exception ->
-
-    }
-
-    private val packetsForSend = mutableListOf<String>()
-
-
     override suspend fun startLogCollect(
         path: String,
         events: List<String>,
         now: Boolean
-    ): LogResult = coroutineScope {
+    ): LogResult = supervisorScope {
+
         var points = emptyList<PositionData>()
 
         val logEntries = if (now) {
@@ -38,15 +32,18 @@ class LogManager(private val locationProvider:ILocation, private val saver:IFile
         }
 
         // Сохраняем лог в файл
-        val packets = saver.save(path, logEntries, now)
+        val saveResult = saver.save(path, logEntries, now)
+
         // Отправляем пакеты
-        val sentPackets = sender.send(packets, now)
+        val sentResult = sender.send(saveResult.getOrNull()?: emptyList(), now)
+
+        val errDesc = saveResult.exceptionOrNull()?.message?:sentResult.exceptionOrNull()?.message
 
         // Формируем результат
         LogResult(
-            errorDesc = null,
-            ready = packets.size,
-            sent = sentPackets,
+            errorDesc = errDesc,
+            ready = saveResult.getOrNull()?.size,
+            sent = sentResult.getOrNull(),
             points = points.ifEmpty {
                 listOf(
                     PositionDataLog(

@@ -52,12 +52,20 @@ class LocationManager(
         resultCallback = callBack
         positionList.clear()
 
-        val builder = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000).apply {
-            setMinUpdateDistanceMeters(0f)
-            setWaitForAccurateLocation(true)
+        val permResult = runCatching {
+            val builder = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000).apply {
+                setMinUpdateDistanceMeters(0f)
+                setWaitForAccurateLocation(true)
+            }
+            fusedManager.requestLocationUpdates(builder.build(), locListener, Looper.getMainLooper())
         }
-        fusedManager.requestLocationUpdates(builder.build(), locListener, Looper.getMainLooper())
-        handler.postDelayed(handleStop, COLLECT_TIMEOUT)
+
+        if (permResult.isSuccess){
+            handler.postDelayed(handleStop, COLLECT_TIMEOUT)
+        } else {
+            stop()
+            sendResult()
+        }
     }
 
     private fun stop() {

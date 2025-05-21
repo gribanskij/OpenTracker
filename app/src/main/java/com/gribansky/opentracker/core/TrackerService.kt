@@ -23,6 +23,7 @@ import com.gribansky.opentracker.core.log.LogResult
 import com.gribansky.opentracker.core.log.NetSender
 import com.gribansky.opentracker.core.log.PositionData
 import com.gribansky.opentracker.core.log.PositionDataLog
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -86,6 +88,11 @@ class TrackerService : Service() {
     }
 
 
+    private val handler = CoroutineExceptionHandler { _, exception ->
+
+    }
+
+
     override fun onCreate() {
         super.onCreate()
         lock.acquire(5000)
@@ -96,17 +103,31 @@ class TrackerService : Service() {
             sender = NetSender()
         )
 
-        serviceScope.launch {
-            commands.collect {
-                lock.acquire(180000)
-                val result = logManager.startLogCollect(getPathToLog(), buildList{addAll(events)},false)
-                updateLogState(result)
-                result.points.forEach { updateHistory(it) }
-                lock.release()
+        serviceScope.launch(handler) {
+
+            try {
+                commands.collect {
+
+
+                    try {
+                        lock.acquire(180000)
+                        val result = logManager.startLogCollect(getPathToLog(), buildList{addAll(events)},false)
+                        updateLogState(result)
+                        result.points.forEach { updateHistory(it) }
+                        lock.release()
+
+                    }catch (ex:Exception){
+                        ex.printStackTrace()
+                    }
+
+                }
+
+            } catch (ex:Exception){
+
+                ex.printStackTrace()
+
             }
-
         }
-
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

@@ -2,7 +2,6 @@ package com.gribansky.opentracker.core.log
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -14,23 +13,20 @@ private const val BASE_SEND_INTERVAL = 30 * 60 * 1000L // 30 min
 
 class NetSender (private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : INetSender {
 
-
-
     private var nextTimeToSend = System.currentTimeMillis() + getRandomInterval()
 
 
-    override suspend fun send(files:List<String>, sendNow:Boolean):Int = coroutineScope{
-
-        if (sendNow){
-            val count = send(files)
-            return@coroutineScope count
+    override suspend fun send(files:List<String>, sendNow:Boolean):Result<Int> {
+        return runCatching {
+            if (sendNow){
+                send(files)
+            } else {
+                if (System.currentTimeMillis() > nextTimeToSend || abs(System.currentTimeMillis() - nextTimeToSend)> BASE_SEND_INTERVAL){
+                    nextTimeToSend = getNextTimeToSend()
+                    send(files)
+                } else 0
+            }
         }
-
-        if (System.currentTimeMillis() > nextTimeToSend || abs(System.currentTimeMillis() - nextTimeToSend)> BASE_SEND_INTERVAL){
-            nextTimeToSend = getNextTimeToSend()
-            send(files)
-        } else 0
-
     }
 
 
