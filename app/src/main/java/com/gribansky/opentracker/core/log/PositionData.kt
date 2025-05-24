@@ -1,5 +1,5 @@
-package com.gribansky.opentracker.core.log
 
+package com.gribansky.opentracker.core.log
 import android.location.Location
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -15,6 +15,9 @@ sealed interface PositionData {
         get() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ", Locale.getDefault())
 
     fun getDataInString(): String
+
+    // Вспомогательная функция для форматирования даты
+    fun formatEventDate(date: Long): String = sdf.format(Date(date))
 }
 
 data class PositionGpsData(
@@ -24,13 +27,13 @@ data class PositionGpsData(
     override fun getDataInString(): String {
         return formatData(
             GPS_DATA_TYPE,
-            sdf.format(Date(gpsLocation.time)),
+            formatEventDate(gpsLocation.time),
             gpsLocation.latitude,
             gpsLocation.longitude,
             gpsLocation.speed,
             gpsLocation.altitude,
             gpsLocation.bearing,
-            sdf.format(Date(eventDate)),
+            formatEventDate(eventDate),
             gpsLocation.accuracy
         )
     }
@@ -54,7 +57,7 @@ data class PositionDataLog(
     override fun getDataInString(): String {
         return formatData(
             LOG_DATA_TYPE,
-            sdf.format(Date(eventDate)),
+            formatEventDate(eventDate),
             logTag,
             logMessage
         )

@@ -18,7 +18,7 @@ private const val DATA_IMEI_CODE = "123"
 private const val DATA_FORMAT_VERSION = 1
 private const val OPEN_TRACKER_TYPE = 1
 private const val INIT_TIME_TO_CHANGE_FILE = 5 * 60 * 1000 //5 min
-private const val TIME_INTERVAL_TO_CHANGE_FILE = 5 * 60 * 1000
+private const val TIME_INTERVAL_TO_CHANGE_FILE = 15 * 60 * 1000
 
 class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : IFileSaver {
 
@@ -45,12 +45,9 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : 
 
     private suspend fun saveToFile(log: List<String>) =
         withContext(NonCancellable + dispatcher) {
-            currentLogFile?.let { f ->
-                FileWriter(f, true).use { w ->
-                    log.forEach {
-                        w.write(it)
-                    }
-                    w.flush()
+            currentLogFile?.let { file ->
+                FileWriter(file, true).use { writer ->
+                    log.forEach(writer::write)
                 }
             }
         }
@@ -72,12 +69,7 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : 
     }
 
     private fun getHeader(): String =
-        buildString {
-            append(DATA_FORMAT_VERSION).append(",")
-            append(OPEN_TRACKER_TYPE).append(",")
-            append(BuildConfig.VERSION_CODE).append(",")
-            append(DATA_IMEI_CODE).append("\n")
-        }
+        "$DATA_FORMAT_VERSION,$OPEN_TRACKER_TYPE,${BuildConfig.VERSION_CODE},$DATA_IMEI_CODE\n"
 
     private suspend fun renameLogFile(dirPath: String) = withContext(NonCancellable + dispatcher) {
         currentLogFile?.let { f ->

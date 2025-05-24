@@ -37,14 +37,14 @@ class LogManager(private val locationProvider:ILocation, private val saver:IFile
         // Отправляем пакеты
         val sentResult = sender.send(saveResult.getOrNull()?: emptyList(), now)
 
-        val errDesc = saveResult.exceptionOrNull()?.message?:sentResult.exceptionOrNull()?.message
 
         // Формируем результат
         LogResult(
-            errorDesc = errDesc,
+            saveError = saveResult.exceptionOrNull()?.message,
+            sendError = sentResult.exceptionOrNull()?.message,
             ready = saveResult.getOrNull()?.size,
             sent = sentResult.getOrNull(),
-            points = points.ifEmpty {
+            collectedPoints = points.ifEmpty {
                 listOf(
                     PositionDataLog(
                         logTag = "GPS receiver:",
