@@ -34,9 +34,7 @@ class LocationManager(
 
     private var resultCallback: ((List<PositionData>) -> Unit)? = null
 
-
     override suspend fun getPoints() = suspendCancellableCoroutine { continuation ->
-
         start { positions ->
             if (continuation.isActive) {
                 continuation.resume(positions)
@@ -46,7 +44,6 @@ class LocationManager(
             stop()
         }
     }
-
 
     private fun start(callBack: (List<PositionData>) -> Unit) {
         resultCallback = callBack
@@ -60,7 +57,7 @@ class LocationManager(
             fusedManager.requestLocationUpdates(builder.build(), locListener, Looper.getMainLooper())
         }
 
-        if (permResult.isSuccess){
+        if (permResult.isSuccess) {
             handler.postDelayed(handleStop, COLLECT_TIMEOUT)
         } else {
             stop()
@@ -73,14 +70,11 @@ class LocationManager(
         fusedManager.removeLocationUpdates(locListener)
     }
 
-
     private fun handleLocationPoint(it: Location) {
-        if (isLocationTooOld(it)) return
-        if (isFake(it)) return
+        if (isLocationTooOld(it) || isFake(it)) return
         positionList.add(PositionGpsData(gpsLocation = it))
         if (positionList.size > POSITIONS_LIMIT) stopWork()
     }
-
 
     private fun stopWork() {
         stop()
@@ -92,9 +86,8 @@ class LocationManager(
         resultCallback?.invoke(positionList)
     }
 
-
     private fun addLastKnownLocation() {
-        if (positionList.isNotEmpty())return
+        if (positionList.isNotEmpty()) return
         val request = fusedManager.lastLocation
         while (!request.isComplete) { }
         val loc: Location? = request.result
@@ -102,7 +95,6 @@ class LocationManager(
             positionList.add(PositionGpsData(gpsLocation = loc))
         }
     }
-
 
     private fun isLocationTooOld(loc: Location): Boolean {
         val timeDif = abs(System.currentTimeMillis() - loc.time)
@@ -119,3 +111,4 @@ class LocationManager(
         return fakeStatus
     }
 }
+
