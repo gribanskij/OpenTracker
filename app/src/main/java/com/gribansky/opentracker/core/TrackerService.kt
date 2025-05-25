@@ -36,14 +36,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 
-private const val TRACKER_TIMER_ACTION = "intent.action.TIMER_FIRED"
-private const val TRACKER_CLIENT_BIND = "intent.action.CLIENT_BIND"
+const val TRACKER_TIMER_ACTION = "intent.action.TIMER_FIRED"
+const val TRACKER_CLIENT_BIND = "intent.action.CLIENT_BIND"
 private const val TRACKER_LOCATION_POINT_INTERVAL = 5 * 60 * 1000L // 5 минут
 private const val HISTORY_WINDOW = 60
 private const val WAKE_LOCK_NAME = "OpenTracker:TrackerService"
 private const val TRACK_TIMER_CODE = 100
 private const val WAKE_LOCK_TIMEOUT = 5000L
 private const val LONG_WAKE_LOCK_TIMEOUT = 180000L
+private const val TIMER_TAG = "TIMER_ACTION"
 
 class TrackerService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.Main.immediate)
@@ -165,17 +166,17 @@ class TrackerService : Service() {
             if (!_trackerState.value.isForeground) {
                 startForeground()
                 updateForegroundState(true)
-                addLogToHistory("TIMER_ACTION", "start foreground")
+                addLogToHistory(TIMER_TAG, "start foreground")
             }
             if (_trackerState.value.serviceLastStartTime == null) {
                 updateStartTime(System.currentTimeMillis())
-                addLogToHistory("TIMER_ACTION", "last start time updated")
+                addLogToHistory(TIMER_TAG, "last start time updated")
             }
-            addLogToHistory("TIMER_ACTION", "start collecting GPS")
+            addLogToHistory(TIMER_TAG, "start collecting GPS")
             commands.tryEmit("start")
         } else {
             updateStartTime(restartTimer())
-            addLogToHistory("TIMER_ACTION", "stop foreground")
+            addLogToHistory(TIMER_TAG, "stop foreground")
             updateForegroundState(false)
             stopForeground()
         }
