@@ -19,6 +19,7 @@ adapterdelegates4 = "4.3.2"
 cardview = "1.0.0"
 comNav = "2.9.0"
 compose-bom = "2025.05.00"
+comp = "2.1.10"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,4 +47,5 @@ compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = 
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization_plugin = {id = "org.jetbrains.kotlin.plugin.serialization",version.ref = "kotlin" }
+compose-plugin = {id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
