@@ -36,8 +36,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 
-private const val TRACKER_TIMER_ACTION = "intent.action.TIMER_FIRED"
-private const val TRACKER_CLIENT_BIND = "intent.action.CLIENT_BIND"
+const val TRACKER_TIMER_ACTION = "intent.action.TIMER_FIRED"
+const val TRACKER_CLIENT_BIND = "intent.action.CLIENT_BIND"
+
 private const val TRACKER_LOCATION_POINT_INTERVAL = 5 * 60 * 1000L // 5 минут
 private const val HISTORY_WINDOW = 60
 private const val WAKE_LOCK_NAME = "OpenTracker:TrackerService"

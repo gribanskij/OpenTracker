@@ -37,7 +37,9 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        compose = true
     }
+
 }
 
 dependencies {
@@ -55,6 +57,11 @@ dependencies {
     implementation(libs.kotlin.serialization)
     implementation(libs.adapterdelegates4)
     implementation(libs.cardview)
+
+    val composeBom = platform(libs.compose.bom)
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+    implementation(libs.compose.navigation)
 
 
 

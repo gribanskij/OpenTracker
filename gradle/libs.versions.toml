@@ -17,6 +17,8 @@ gms = "21.3.0"
 ks = "1.8.1"
 adapterdelegates4 = "4.3.2"
 cardview = "1.0.0"
+comNav = "2.9.0"
+compose-bom = "2025.05.00"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,6 +37,9 @@ google-gms = {group =  "com.google.android.gms", name = "play-services-location"
 kotlin-serialization = {group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref= "ks"}
 adapterdelegates4 = { module = "com.hannesdorfmann:adapterdelegates4", version.ref = "adapterdelegates4" }
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
+
+compose-navigation = {group =  "androidx.navigation", name = "navigation-compose",version.ref= "comNav"}
+compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 
 
 [plugins]
