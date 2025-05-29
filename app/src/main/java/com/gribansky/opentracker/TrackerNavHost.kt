@@ -3,6 +3,7 @@ package com.gribansky.opentracker
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -14,6 +15,7 @@ import com.gribansky.opentracker.ui.settings.SettingsScreen
 
 @Composable
 fun TrackerNavHost(
+    viewModelStoreOwner: ViewModelStoreOwner,
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
@@ -24,6 +26,7 @@ fun TrackerNavHost(
     ) {
         composable(route = Overview.route) {
             OverviewScreen(
+                viewModelStoreOwner = viewModelStoreOwner,
                 onClickSeeAllAccounts = {
                     //navController.navigateSingleTopTo(Accounts.route)
                 },
@@ -37,6 +40,7 @@ fun TrackerNavHost(
         }
         composable(route = History.route) {
             HistoryScreen(
+                viewModelStoreOwner = viewModelStoreOwner,
                 onAccountClick = { accountType ->
                     //navController.navigateToSingleAccount(accountType)
                 }

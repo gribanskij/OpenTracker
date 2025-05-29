@@ -8,6 +8,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.gribansky.opentracker.ui.components.TrackerTabRow
@@ -31,6 +32,10 @@ fun TrackerApp() {
         val currentScreen =
             trackerTabRowScreens.find { it.route == currentDestination?.route } ?: Overview
 
+        val viewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
+            "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
+        }
+
         Scaffold(
             bottomBar = {
                 TrackerTabRow(
@@ -43,6 +48,7 @@ fun TrackerApp() {
             }
         ) { innerPadding ->
             TrackerNavHost(
+                viewModelStoreOwner = viewModelStoreOwner,
                 navController = navController,
                 modifier = Modifier.padding(innerPadding)
             )

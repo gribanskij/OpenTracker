@@ -7,7 +7,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gribansky.opentracker.data.UserData
+import com.gribansky.opentracker.ui.ServiceViewModel
 import com.gribansky.opentracker.ui.components.AccountRow
 import com.gribansky.opentracker.ui.components.StatementBody
 
@@ -16,8 +19,10 @@ import com.gribansky.opentracker.ui.components.StatementBody
  */
 @Composable
 fun HistoryScreen(
+    viewModelStoreOwner: ViewModelStoreOwner,
     onAccountClick: (String) -> Unit = {},
 ) {
+    val viewModel: ServiceViewModel = viewModel(viewModelStoreOwner)
     val amountsTotal = remember { UserData.accounts.map { account -> account.balance }.sum() }
     StatementBody(
         modifier = Modifier.semantics { contentDescription = "Accounts Screen" },
