@@ -1,6 +1,7 @@
 package com.gribansky.opentracker
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Settings
@@ -25,6 +26,11 @@ data object History : TrackerDestination {
 data object Settings : TrackerDestination {
     override val icon = Icons.Filled.Settings
     override val route = "settings"
+}
+data object Permissions: TrackerDestination {
+    override val icon = Icons.Filled.Checklist
+    override val route = "permissions"
+
 }
 
 

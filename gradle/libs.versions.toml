@@ -19,6 +19,7 @@ adapterdelegates4 = "4.3.2"
 cardview = "1.0.0"
 comNav = "2.9.0"
 compose-bom = "2025.05.01"
+comp-perm = "0.37.3"
 
 
 [libraries]
@@ -41,6 +42,7 @@ cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 
 compose-navigation = {group =  "androidx.navigation", name = "navigation-compose",version.ref= "comNav"}
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+compose-permissions = {group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "comp-perm" }
 
 
 [plugins]

@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.gribansky.opentracker.ui.dashboard.OverviewScreen
 import com.gribansky.opentracker.ui.history.HistoryScreen
+import com.gribansky.opentracker.ui.permissions.PermissionScreen
 import com.gribansky.opentracker.ui.settings.SettingsScreen
 
 
@@ -17,11 +18,12 @@ import com.gribansky.opentracker.ui.settings.SettingsScreen
 fun TrackerNavHost(
     viewModelStoreOwner: ViewModelStoreOwner,
     navController: NavHostController,
+    startDestinationRoute: String,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
-        startDestination = Overview.route,
+        startDestination = startDestinationRoute,
         modifier = modifier
     ) {
         composable(route = Overview.route) {
@@ -48,6 +50,10 @@ fun TrackerNavHost(
         }
         composable(route = Settings.route) {
             SettingsScreen()
+        }
+
+        composable (route = Permissions.route){
+            PermissionScreen(navController)
         }
     }
 }
