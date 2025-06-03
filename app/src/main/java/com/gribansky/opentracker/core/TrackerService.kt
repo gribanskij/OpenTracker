@@ -84,6 +84,7 @@ class TrackerService : Service() {
     override fun onCreate() {
         super.onCreate()
         acquireWakeLock(WAKE_LOCK_TIMEOUT)
+        createNotificationChannel(this)
 
         val logManager = LogManager(
             locationProvider = LocationManager(LocationServices.getFusedLocationProviderClient(this)),
