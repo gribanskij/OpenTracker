@@ -27,12 +27,6 @@ data object Settings : TrackerDestination {
     override val icon = Icons.Filled.Settings
     override val route = "settings"
 }
-data object Permissions: TrackerDestination {
-    override val icon = Icons.Filled.Checklist
-    override val route = "permissions"
-
-}
-
 
 
 // Screens to be displayed in the top RallyTabRow

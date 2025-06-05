@@ -2,23 +2,23 @@ package com.gribansky.opentracker
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.gribansky.opentracker.ui.components.TrackerTabRow
+import com.gribansky.opentracker.ui.MainScreen
+import com.gribansky.opentracker.ui.permissions.PermissionScreen
 import com.gribansky.opentracker.ui.theme.TrackerTheme
 
 class TrackerActivity : ComponentActivity() {
@@ -32,36 +32,20 @@ class TrackerActivity : ComponentActivity() {
 
 @Composable
 fun TrackerApp() {
-    TrackerTheme  {
-        val navController = rememberNavController()
-        val currentBackStack by navController.currentBackStackEntryAsState()
-        val currentDestination = currentBackStack?.destination
-        val currentScreen =
-            trackerTabRowScreens.find { it.route == currentDestination?.route } ?: Overview
-
-        val startDestination = if (LocalContext.current.hasAllPermissions()) Overview.route else Permissions.route
-
-        val viewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
-            "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
+    TrackerTheme {
+        val context = LocalContext.current
+        var showPermissionScreen by remember {
+            mutableStateOf(!context.hasAllPermissions())
         }
 
-        Scaffold(
-            bottomBar = {
-                TrackerTabRow(
-                    allScreens = trackerTabRowScreens ,
-                    onTabSelected = { newScreen ->
-                        navController.navigateSingleTopTo(newScreen.route)
-                    },
-                    currentScreen = currentScreen
-                )
-            }
-        ) { innerPadding ->
-            TrackerNavHost(
-                viewModelStoreOwner = viewModelStoreOwner,
-                navController = navController,
-                modifier = Modifier.padding(innerPadding),
-                startDestinationRoute = startDestination
+        if (showPermissionScreen) {
+            PermissionScreen(
+                onDismiss = { showPermissionScreen = false },
+                onOpenSettings = { context.openAppSettings() }
             )
+        } else {
+            MainScreen()
+
         }
     }
 }
@@ -70,10 +54,18 @@ fun Context.hasAllPermissions(): Boolean {
     val requiredPermissions = listOfNotNull(
         Manifest.permission.ACCESS_FINE_LOCATION,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.POST_NOTIFICATIONS else null,
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) Manifest.permission.ACCESS_BACKGROUND_LOCATION  else null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) Manifest.permission.ACCESS_BACKGROUND_LOCATION else null
     )
 
     return requiredPermissions.all { permission ->
         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
     }
+}
+
+// Вспомогательные функции
+fun Context.openAppSettings() {
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+        data = Uri.fromParts("package", packageName, null)
+    }
+    startActivity(intent)
 }

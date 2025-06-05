@@ -62,7 +62,6 @@ fun OverviewScreen(
     LaunchedEffect(Unit) {
         viewModel.bindService()
     }
-
     Column(
         modifier = Modifier
             .padding(16.dp)

@@ -51,10 +51,6 @@ fun TrackerNavHost(
         composable(route = Settings.route) {
             SettingsScreen()
         }
-
-        composable (route = Permissions.route){
-            PermissionScreen(navController)
-        }
     }
 }
 
