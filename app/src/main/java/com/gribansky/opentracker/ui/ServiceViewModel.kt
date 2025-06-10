@@ -19,9 +19,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ServiceViewModel(application: Application) : AndroidViewModel(application) {
+open class ServiceViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiOverView = MutableStateFlow(TrackerState())
-    val uiOverView: StateFlow<TrackerState> = _uiOverView.asStateFlow()
+    open val uiOverView: StateFlow<TrackerState> = _uiOverView.asStateFlow()
 
     private val _uiHistory = MutableStateFlow(emptyList<PositionData>())
     val uiHistory: StateFlow<List<PositionData>> = _uiHistory.asStateFlow()
@@ -56,7 +56,7 @@ class ServiceViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun bindService() {
+    open fun bindService() {
         val intent = Intent(getApplication(), TrackerService::class.java).apply {
             action = TRACKER_CLIENT_BIND
         }

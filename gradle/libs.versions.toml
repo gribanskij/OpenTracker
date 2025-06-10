@@ -20,7 +20,7 @@ cardview = "1.0.0"
 comNav = "2.9.0"
 compose-bom = "2025.06.00"
 comp-perm = "0.37.3"
-systemuicontroller = "0.32.0"
+systemuicontroller = "0.36.0"
 
 
 [libraries]

@@ -46,6 +46,18 @@ import com.gribansky.opentracker.ui.components.formatAmount
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.MutableCreationExtras
+import android.app.Application
+import androidx.compose.ui.platform.LocalContext
+import com.gribansky.opentracker.core.TrackerState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import com.gribansky.opentracker.ui.theme.TrackerTheme
 
 @Composable
 fun OverviewScreen(
@@ -54,7 +66,10 @@ fun OverviewScreen(
     onClickSeeAllBills: () -> Unit = {},
     onAccountClick: (String) -> Unit = {},
 ) {
-    val viewModel: ServiceViewModel = viewModel(viewModelStoreOwner)
+    val viewModel: ServiceViewModel = viewModel(
+        viewModelStoreOwner = viewModelStoreOwner,
+        factory = (viewModelStoreOwner as? PreviewViewModelOwner)?.factory
+    )
     val uiState by viewModel.uiOverView.collectAsStateWithLifecycle()
     val timeFormat = SimpleDateFormat("HH:mm:ss dd-MM-yy ", Locale.getDefault())
 
@@ -282,3 +297,41 @@ private fun SeeAllButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
 private val TrackerDefaultPadding = 12.dp
 
 private const val SHOWN_ITEMS = 3
+
+private class PreviewViewModelOwner : ViewModelStoreOwner {
+    override val viewModelStore: ViewModelStore = ViewModelStore()
+    
+    val factory = object : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+            return PreviewServiceViewModel() as T
+        }
+    }
+}
+
+private class PreviewServiceViewModel : ServiceViewModel(Application()) {
+    private val _previewUiOverView = MutableStateFlow(
+        TrackerState(
+            serviceLastStartTime = System.currentTimeMillis(),
+            isForeground = true
+        )
+    )
+    override val uiOverView: StateFlow<TrackerState> = _previewUiOverView
+    
+    override fun bindService() {
+        // Do nothing in preview
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun OverviewScreenPreview() {
+    TrackerTheme {
+        OverviewScreen(
+            viewModelStoreOwner = PreviewViewModelOwner(),
+            onClickSeeAllAccounts = {},
+            onClickSeeAllBills = {},
+            onAccountClick = {}
+        )
+    }
+}
