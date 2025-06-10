@@ -26,8 +26,9 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import java.text.DecimalFormat
-
-
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun AccountRow(
@@ -142,6 +143,14 @@ fun RallyDivider(modifier: Modifier = Modifier) {
 
 fun formatAmount(amount: Float): String {
     return AmountDecimalFormat.format(amount)
+}
+
+/**
+ * Форматирует дату и время в формате "17:06 10 июн. 25"
+ */
+fun formatDateTime(date: Date): String {
+    val formatter = SimpleDateFormat("HH:mm dd MMM yy", Locale.getDefault())
+    return formatter.format(date).lowercase()
 }
 
 private val AccountDecimalFormat = DecimalFormat("####")
