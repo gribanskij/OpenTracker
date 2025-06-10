@@ -5,11 +5,11 @@ coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-appcompat = "1.7.0"
+appcompat = "1.7.1"
 material = "1.12.0"
 constraintlayout = "2.2.1"
-lifecycleLivedataKtx = "2.9.0"
-lifecycleViewmodelKtx = "2.9.0"
+lifecycleLivedataKtx = "2.9.1"
+lifecycleViewmodelKtx = "2.9.1"
 navigationFragmentKtx = "2.9.0"
 navigationUiKtx = "2.9.0"
 preferenceKtx = "1.2.1"
@@ -18,8 +18,9 @@ ks = "1.8.1"
 adapterdelegates4 = "4.3.2"
 cardview = "1.0.0"
 comNav = "2.9.0"
-compose-bom = "2025.05.01"
+compose-bom = "2025.06.00"
 comp-perm = "0.37.3"
+systemuicontroller = "0.32.0"
 
 
 [libraries]
@@ -43,6 +44,7 @@ cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 compose-navigation = {group =  "androidx.navigation", name = "navigation-compose",version.ref= "comNav"}
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 compose-permissions = {group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "comp-perm" }
+systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "systemuicontroller" }
 
 
 [plugins]

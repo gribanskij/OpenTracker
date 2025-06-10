@@ -10,7 +10,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.gribansky.opentracker.ui.dashboard.OverviewScreen
 import com.gribansky.opentracker.ui.history.HistoryScreen
-import com.gribansky.opentracker.ui.permissions.PermissionScreen
 import com.gribansky.opentracker.ui.settings.SettingsScreen
 
 

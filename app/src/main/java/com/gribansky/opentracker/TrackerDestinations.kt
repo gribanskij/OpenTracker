@@ -1,7 +1,6 @@
 package com.gribansky.opentracker
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Settings

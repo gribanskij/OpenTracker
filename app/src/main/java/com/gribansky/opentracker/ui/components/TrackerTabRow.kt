@@ -36,10 +36,11 @@ import java.util.Locale
 fun TrackerTabRow(
     allScreens: List<TrackerDestination>,
     onTabSelected: (TrackerDestination) -> Unit,
-    currentScreen: TrackerDestination
+    currentScreen: TrackerDestination,
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        Modifier
+        modifier = modifier
             .height(TabHeight)
             .fillMaxWidth()
     ) {

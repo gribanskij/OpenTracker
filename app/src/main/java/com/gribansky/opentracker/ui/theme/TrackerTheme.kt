@@ -1,16 +1,29 @@
 package com.gribansky.opentracker.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Composable
 fun TrackerTheme(content: @Composable () -> Unit) {
+    val systemUiController = rememberSystemUiController()
+    val isDarkTheme = isSystemInDarkTheme()
+
+    SideEffect {
+        systemUiController.setSystemBarsColor(
+            color = Color.Transparent,
+            darkIcons = !isDarkTheme
+        )
+    }
+
     MaterialTheme(colors = ColorPalette, typography = Typography, content = content)
 }
 
