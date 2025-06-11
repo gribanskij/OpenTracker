@@ -53,7 +53,8 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.runtime.CompositionLocalProvider
-import com.gribansky.opentracker.core.TrackerState
+import com.gribansky.opentracker.core.TrackerStatus
+import com.gribansky.opentracker.ui.TrackerState
 import com.gribansky.opentracker.ui.components.GSMRow
 import com.gribansky.opentracker.ui.components.formatDateTime
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,7 +64,6 @@ import com.gribansky.opentracker.ui.theme.TrackerTheme
 @Composable
 fun OverviewScreen(
     viewModelStoreOwner: ViewModelStoreOwner,
-    onClickSendAll: () -> Unit = {},
     onAccountClick: (String) -> Unit = {},
 ) {
     val viewModel: ServiceViewModel = viewModel(
@@ -82,11 +82,11 @@ fun OverviewScreen(
             .verticalScroll(rememberScrollState())
             .semantics { contentDescription = "Overview Screen" }
     ) {
-        AlertCard()
+        //AlertCard()
         Spacer(Modifier.height(TrackerDefaultPadding))
-        AccountsCard(
-            uiState.serviceLastStartTime?.let { formatDateTime(Date(it)) } ?: "не определено",
-            onClickSendAll = onClickSendAll,
+        OverviewScreenCard (
+            uiState = uiState,
+            onClickSendAll = { viewModel.sendAll() },
         )
     }
 }
@@ -129,7 +129,7 @@ private fun AlertHeader(onClickSeeAll: () -> Unit) {
     ) {
         Text(
             text = "Alerts",
-            style = MaterialTheme.typography.subtitle2,
+            style = typography.subtitle2,
             modifier = Modifier.align(Alignment.CenterVertically)
         )
         TextButton(
@@ -139,7 +139,7 @@ private fun AlertHeader(onClickSeeAll: () -> Unit) {
         ) {
             Text(
                 text = "SEE ALL",
-                style = MaterialTheme.typography.button,
+                style =typography.button,
             )
         }
     }
@@ -150,15 +150,11 @@ private fun AlertItem(message: String) {
     Row(
         modifier = Modifier
             .padding(TrackerDefaultPadding)
-            // Regard the whole row as one semantics node. This way each row will receive focus as
-            // a whole and the focus bounds will be around the whole row content. The semantics
-            // properties of the descendants will be merged. If we'd use clearAndSetSemantics instead,
-            // we'd have to define the semantics properties explicitly.
             .semantics(mergeDescendants = true) {},
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            style = MaterialTheme.typography.body2,
+            style = typography.body2,
             modifier = Modifier.weight(1f),
             text = message
         )
@@ -176,10 +172,25 @@ private fun AlertItem(message: String) {
 
 @Composable
 private fun OverviewScreenCard(
-    title: String,
-    status: TrackerStatus = TrackerStatus.ACTIVE,
+    uiState: TrackerState,
     onClickSendAll: () -> Unit,
 ) {
+
+    val status = when {
+        uiState.isForeground -> TrackerStatus.ACTIVE
+        uiState.isForeground == false && uiState.serviceLastStartTime != null -> TrackerStatus.WAITING
+        else -> TrackerStatus.INACTIVE
+    }
+    val trackerStartTime = uiState.serviceLastStartTime?.let { formatDateTime(Date(it)) }?:"-"
+    val gpsTime = uiState.gpsLastTimeReceived?.let { formatDateTime(Date(it)) }?:"-"
+    val gsmTime = uiState.gsmLastTimeReceived?.let { formatDateTime(Date(it)) }?:"-"
+    val packetSent = uiState.packetsSentLastTime?.let { formatDateTime(Date(it)) }?:"-"
+    val packetReady = uiState.packetsReadyLastTime?.let { formatDateTime(Date(it)) }?:"-"
+    val packetTime = if (uiState.packetsSent !=null && uiState.packetsSent > 0 ) packetSent else packetReady
+    val packetWhat = if (uiState.packetsSent !=null && uiState.packetsSent > 0 ) "Отправлено (${uiState.packetsSent})"
+     else "Готовы к отправке (${uiState.packetsReady ?: "-"})"
+
+
     Card {
         Column {
             Row(
@@ -196,7 +207,7 @@ private fun OverviewScreenCard(
 
                     CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
                         Text(
-                            text = title,
+                            text = trackerStartTime,
                             style = typography.subtitle1,
                             color = MaterialTheme.colors.onBackground
                         )
@@ -217,13 +228,17 @@ private fun OverviewScreenCard(
             )
             Column(Modifier.padding(start = 16.dp, top = 4.dp, end = 8.dp)) {
 
-                GpsRow(onDate = Date().time, color = Color.Green)
-                GSMRow(onDate = Date().time, color = Color.Yellow)
-                PacketRow(onDate = Date().time, color = Color.Red)
+                GpsRow(onDate = gpsTime, color = Color.Green)
+                GSMRow(onDate = gsmTime, color = Color.Green)
+                PacketRow(
+                    message = packetWhat,
+                    onDate = packetTime,
+                    color = Color.Green
+                )
 
                 SendAllButton(
                     modifier = Modifier.clearAndSetSemantics {
-                        contentDescription = "All $title"
+                        contentDescription = "All "
                     },
                     onClick = onClickSendAll,
                 )
@@ -231,17 +246,6 @@ private fun OverviewScreenCard(
         }
     }
 }
-
-
-@Composable
-private fun AccountsCard(message: String, onClickSendAll: () -> Unit) {
-    OverviewScreenCard(
-        title = message,
-        status = TrackerStatus.ACTIVE,
-        onClickSendAll = onClickSendAll,
-    )
-}
-
 
 
 @Composable
@@ -293,14 +297,9 @@ fun OverviewScreenPreview() {
     TrackerTheme {
         OverviewScreen(
             viewModelStoreOwner = PreviewViewModelOwner(),
-            onClickSendAll = {},
             onAccountClick = {}
         )
     }
 }
 
-enum class TrackerStatus(val label: String,val color: Color) {
-    ACTIVE("Трекер запущен",Color(0xFF37EFBA)),
-    WARNING("Трекер ожидает запуск",Color(0xFFFFDC78)),
-    ERROR("Трекер остановлен",Color(0xFFFF6951))
-}
+

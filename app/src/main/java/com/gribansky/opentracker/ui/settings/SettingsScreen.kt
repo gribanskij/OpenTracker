@@ -26,7 +26,7 @@ fun SettingsScreen(
         circleLabel = "????????",
         rows = { bill ->
             PacketRow(
-                onDate = Date().time,
+                onDate = "16:47 10 июн. 25",
                 color = Color.Green
             )
         }

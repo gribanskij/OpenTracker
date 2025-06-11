@@ -1,6 +1,7 @@
 package com.gribansky.opentracker.core
 
 import android.content.SharedPreferences
+import com.gribansky.opentracker.ui.TrackerState
 import kotlinx.serialization.json.Json
 
 

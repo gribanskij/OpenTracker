@@ -28,9 +28,6 @@ fun TrackerNavHost(
         composable(route = Overview.route) {
             OverviewScreen(
                 viewModelStoreOwner = viewModelStoreOwner,
-                onClickSendAll = {
-                    //navController.navigateSingleTopTo(Accounts.route)
-                },
                 onAccountClick = { accountType ->
                     //navController.navigateToSingleAccount(accountType)
                 }

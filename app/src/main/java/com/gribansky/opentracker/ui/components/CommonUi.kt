@@ -31,8 +31,8 @@ import java.util.Locale
 @Composable
 fun GpsRow(
     modifier: Modifier = Modifier,
-    message: String = "Получено",
-    onDate: Long,
+    message: String = "Определено",
+    onDate: String,
     color: Color
 ) {
     BaseRow(
@@ -48,8 +48,8 @@ fun GpsRow(
 @Composable
 fun GSMRow(
     modifier: Modifier = Modifier,
-    message: String = "Получено",
-    onDate: Long,
+    message: String = "Определено",
+    onDate: String,
     color: Color
 ) {
     BaseRow(
@@ -67,7 +67,7 @@ fun GSMRow(
 fun PacketRow(
     modifier: Modifier = Modifier,
     message: String = "Отправлено",
-    onDate: Long,
+    onDate: String,
     color: Color
 ) {
     BaseRow(
@@ -85,15 +85,14 @@ private fun BaseRow(
     color: Color,
     title: String,
     message: String,
-    onDate: Long
+    onDate: String
 ) {
-    val formattedDate = formatDateTime(Date(onDate))
     Row(
         modifier = modifier
             .height(68.dp)
             .clearAndSetSemantics {
                 contentDescription =
-                    "$title $message $formattedDate"
+                    "$title $message $onDate"
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -112,7 +111,7 @@ private fun BaseRow(
 
         Spacer(Modifier.weight(1f))
 
-        Column(Modifier) {
+        Column(Modifier.width(180.dp)) {
             Text(
                 text = message,
                 style = typography.body2,
@@ -120,7 +119,7 @@ private fun BaseRow(
             )
             CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
                 Text(
-                    text = formattedDate,
+                    text = onDate,
                     style = typography.subtitle1,
                     color = MaterialTheme.colors.onBackground
                 )
@@ -171,9 +170,9 @@ private fun RowPreview() {
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            GpsRow(color = Color.Green, onDate = 1654436848000L)
-            GSMRow(color = Color.Yellow, onDate = 1654436848000L)
-            PacketRow(color = Color.Blue, onDate = 1654436848000L)
+            GpsRow(color = Color.Green, onDate = "16:47 10 июн. 25")
+            GSMRow(color = Color.Yellow, onDate = "16:47 10 июн. 25")
+            PacketRow(color = Color.Blue, onDate = "16:47 10 июн. 25")
         }
     }
 }

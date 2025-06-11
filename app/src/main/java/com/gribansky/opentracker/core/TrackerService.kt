@@ -23,6 +23,7 @@ import com.gribansky.opentracker.core.log.LogResult
 import com.gribansky.opentracker.core.log.NetSender
 import com.gribansky.opentracker.core.log.PositionData
 import com.gribansky.opentracker.core.log.PositionDataLog
+import com.gribansky.opentracker.ui.TrackerState
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -229,8 +230,14 @@ class TrackerService : Service() {
     }
 
     private fun updateLogState(logResult: LogResult) {
+
+
         _trackerState.update {
             it.copy(
+                gpsLastTimeReceived = if (logResult.collectedPoints.isNotEmpty())logResult.time else it.gpsLastTimeReceived,
+                gsmLastTimeReceived = null,
+                packetsSentLastTime = if (logResult.sent != null && logResult.sent > 0 ) logResult.time else it.packetsSentLastTime,
+                packetsReadyLastTime = if (logResult.ready != null && logResult.ready > 0 ) logResult.time else it.packetsReadyLastTime,
                 logTime = logResult.time,
                 packetsReady = logResult.ready,
                 packetsSent = logResult.sent

@@ -34,7 +34,7 @@ fun HistoryScreen(
         circleLabel = "???????",
         rows = { account ->
             GpsRow(
-                onDate = Date().time,
+                onDate = "16:47 10 июн. 25",
                 color = Color.Red,
             )
         }
@@ -57,7 +57,7 @@ fun SingleAccountScreen(
         circleLabel = account.name,
     ) { row ->
         GpsRow(
-            onDate = Date().time,
+            onDate = "16:47 10 июн. 25",
             color = Color.Red,
         )
     }
