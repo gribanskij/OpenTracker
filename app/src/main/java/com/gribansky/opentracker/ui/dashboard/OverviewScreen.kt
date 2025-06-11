@@ -1,7 +1,6 @@
 package com.gribansky.opentracker.ui.dashboard
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,21 +38,23 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.gribansky.opentracker.data.UserData
 import com.gribansky.opentracker.ui.ServiceViewModel
-import com.gribansky.opentracker.ui.components.AccountRow
-import com.gribansky.opentracker.ui.components.BillRow
+import com.gribansky.opentracker.ui.components.GpsRow
+import com.gribansky.opentracker.ui.components.PacketRow
 import com.gribansky.opentracker.ui.components.TrackerAlertDialog
-import com.gribansky.opentracker.ui.components.RallyDivider
-import com.gribansky.opentracker.ui.components.formatAmount
-import java.text.SimpleDateFormat
+import com.gribansky.opentracker.ui.components.TrackerDivider
 import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelProvider
 import android.app.Application
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.LocalContentAlpha
+import androidx.compose.material.MaterialTheme.typography
+import androidx.compose.runtime.CompositionLocalProvider
 import com.gribansky.opentracker.core.TrackerState
+import com.gribansky.opentracker.ui.components.GSMRow
 import com.gribansky.opentracker.ui.components.formatDateTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,8 +63,7 @@ import com.gribansky.opentracker.ui.theme.TrackerTheme
 @Composable
 fun OverviewScreen(
     viewModelStoreOwner: ViewModelStoreOwner,
-    onClickSeeAllAccounts: () -> Unit = {},
-    onClickSeeAllBills: () -> Unit = {},
+    onClickSendAll: () -> Unit = {},
     onAccountClick: (String) -> Unit = {},
 ) {
     val viewModel: ServiceViewModel = viewModel(
@@ -71,7 +71,6 @@ fun OverviewScreen(
         factory = (viewModelStoreOwner as? PreviewViewModelOwner)?.factory
     )
     val uiState by viewModel.uiOverView.collectAsStateWithLifecycle()
-    val timeFormat = SimpleDateFormat("HH:mm:ss dd-MM-yy ", Locale.getDefault())
 
     // Автоматическое подключение при первом отображении
     LaunchedEffect(Unit) {
@@ -87,15 +86,8 @@ fun OverviewScreen(
         Spacer(Modifier.height(TrackerDefaultPadding))
         AccountsCard(
             uiState.serviceLastStartTime?.let { formatDateTime(Date(it)) } ?: "не определено",
-            onClickSeeAll = onClickSeeAllAccounts,
-            onAccountClick = onAccountClick
+            onClickSendAll = onClickSendAll,
         )
-        /*Spacer(Modifier.height(TrackerDefaultPadding))
-        BillsCard(
-            onClickSeeAll = onClickSeeAllBills
-        )
-
-         */
     }
 }
 
@@ -119,7 +111,7 @@ private fun AlertCard() {
             AlertHeader {
                 showDialog = true
             }
-            RallyDivider(
+            TrackerDivider(
                 modifier = Modifier.padding(start = TrackerDefaultPadding, end = TrackerDefaultPadding)
             )
             AlertItem(alertMessage)
@@ -183,15 +175,10 @@ private fun AlertItem(message: String) {
 
 
 @Composable
-private fun <T> OverviewScreenCard(
+private fun OverviewScreenCard(
     title: String,
-    amount: Float,
     status: TrackerStatus = TrackerStatus.ACTIVE,
     onClickSendAll: () -> Unit,
-    values: (T) -> Float,
-    colors: (T) -> Color,
-    data: List<T>,
-    row: @Composable (T) -> Unit
 ) {
     Card {
         Column {
@@ -201,9 +188,20 @@ private fun <T> OverviewScreenCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    val amountText = "Трекер работает"
-                    Text(text = amountText, style = MaterialTheme.typography.h3)
-                    Text(text = title, style = MaterialTheme.typography.subtitle2)
+                    Text (
+                        text = status.label,
+                        style = typography.body2,
+                        color = MaterialTheme.colors.onBackground
+                    )
+
+                    CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                        Text(
+                            text = title,
+                            style = typography.subtitle1,
+                            color = MaterialTheme.colors.onBackground
+                        )
+                    }
+
                 }
                 Box(
                     modifier = Modifier
@@ -211,9 +209,18 @@ private fun <T> OverviewScreenCard(
                         .background(status.color, CircleShape)
                 )
             }
-            OverViewDivider(data, values, colors)
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(Color(0xFF005D57))
+            )
             Column(Modifier.padding(start = 16.dp, top = 4.dp, end = 8.dp)) {
-                data.take(SHOWN_ITEMS).forEach { row(it) }
+
+                GpsRow(onDate = Date().time, color = Color.Green)
+                GSMRow(onDate = Date().time, color = Color.Yellow)
+                PacketRow(onDate = Date().time, color = Color.Red)
+
                 SendAllButton(
                     modifier = Modifier.clearAndSetSemantics {
                         contentDescription = "All $title"
@@ -225,67 +232,17 @@ private fun <T> OverviewScreenCard(
     }
 }
 
-@Composable
-private fun <T> OverViewDivider(
-    data: List<T>,
-    values: (T) -> Float,
-    colors: (T) -> Color
-) {
-    Row(Modifier.fillMaxWidth()) {
-        data.forEach { item: T ->
-            Spacer(
-                modifier = Modifier
-                    .weight(values(item))
-                    .height(1.dp)
-                    .background(colors(item))
-            )
-        }
-    }
-}
-
 
 @Composable
-private fun AccountsCard(message: String, onClickSeeAll: () -> Unit, onAccountClick: (String) -> Unit) {
-    val amount = UserData.accounts.map { account -> account.balance }.sum()
+private fun AccountsCard(message: String, onClickSendAll: () -> Unit) {
     OverviewScreenCard(
         title = message,
-        amount = amount,
         status = TrackerStatus.ACTIVE,
-        onClickSendAll = onClickSeeAll,
-        data = UserData.accounts,
-        colors = { it.color },
-        values = { it.balance }
-    ) { account ->
-        AccountRow(
-            modifier = Modifier.clickable { onAccountClick(account.name) },
-            name = account.name,
-            number = account.number,
-            amount = account.balance,
-            color = account.color
-        )
-    }
+        onClickSendAll = onClickSendAll,
+    )
 }
 
-@Composable
-private fun BillsCard(onClickSeeAll: () -> Unit) {
-    val amount = UserData.bills.map { bill -> bill.amount }.sum()
-    OverviewScreenCard(
-        title = "???????",
-        amount = amount,
-        status = TrackerStatus.ACTIVE,
-        onClickSendAll = onClickSeeAll,
-        data = UserData.bills,
-        colors = { it.color },
-        values = { it.amount }
-    ) { bill ->
-        BillRow(
-            name = bill.name,
-            due = bill.due,
-            amount = bill.amount,
-            color = bill.color
-        )
-    }
-}
+
 
 @Composable
 private fun SendAllButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
@@ -301,10 +258,6 @@ private fun SendAllButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
 }
 
 private val TrackerDefaultPadding = 12.dp
-
-private const val SHOWN_ITEMS = 3
-
-
 
 
 
@@ -340,15 +293,14 @@ fun OverviewScreenPreview() {
     TrackerTheme {
         OverviewScreen(
             viewModelStoreOwner = PreviewViewModelOwner(),
-            onClickSeeAllAccounts = {},
-            onClickSeeAllBills = {},
+            onClickSendAll = {},
             onAccountClick = {}
         )
     }
 }
 
-enum class TrackerStatus(val color: Color) {
-    ACTIVE(Color.Green),
-    WARNING(Color(0xFFFFB74D)), // Orange
-    ERROR(Color.Red)
+enum class TrackerStatus(val label: String,val color: Color) {
+    ACTIVE("Трекер запущен",Color(0xFF37EFBA)),
+    WARNING("Трекер ожидает запуск",Color(0xFFFFDC78)),
+    ERROR("Трекер остановлен",Color(0xFFFF6951))
 }

@@ -3,13 +3,14 @@ package com.gribansky.opentracker.ui.settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import com.gribansky.opentracker.data.Bill
 import com.gribansky.opentracker.data.UserData
-import com.gribansky.opentracker.ui.components.BillRow
+import com.gribansky.opentracker.ui.components.PacketRow
 import com.gribansky.opentracker.ui.components.StatementBody
+import java.util.Date
 
 
 @Composable
@@ -24,7 +25,10 @@ fun SettingsScreen(
         amountsTotal = bills.map { bill -> bill.amount }.sum(),
         circleLabel = "????????",
         rows = { bill ->
-            BillRow(bill.name, bill.due, bill.amount, bill.color)
+            PacketRow(
+                onDate = Date().time,
+                color = Color.Green
+            )
         }
     )
 }
