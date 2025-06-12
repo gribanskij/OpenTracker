@@ -54,6 +54,7 @@ import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.runtime.CompositionLocalProvider
 import com.gribansky.opentracker.core.TrackerStatus
+import com.gribansky.opentracker.ui.PreviewServiceViewModel
 import com.gribansky.opentracker.ui.TrackerState
 import com.gribansky.opentracker.ui.components.GSMRow
 import com.gribansky.opentracker.ui.components.formatDateTime
@@ -277,19 +278,9 @@ private class PreviewViewModelOwner : ViewModelStoreOwner {
     }
 }
 
-private class PreviewServiceViewModel : ServiceViewModel(Application()) {
-    private val _previewUiOverView = MutableStateFlow(
-        TrackerState(
-            serviceLastStartTime = System.currentTimeMillis(),
-            isForeground = true
-        )
-    )
-    override val uiOverView: StateFlow<TrackerState> = _previewUiOverView
-    
-    override fun bindService() {
-        // Do nothing in preview
-    }
-}
+
+
+
 
 @Preview(showBackground = true)
 @Composable

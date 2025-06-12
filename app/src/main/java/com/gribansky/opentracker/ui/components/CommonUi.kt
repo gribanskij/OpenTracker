@@ -21,12 +21,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gribansky.opentracker.ui.theme.TrackerTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+
+
+@Composable
+fun LogRow(
+    modifier: Modifier = Modifier,
+    message: String = "Сообщение",
+    onDate: String,
+    color: Color
+
+) {
+
+    BaseRow(
+        modifier = modifier,
+        color = color,
+        title = "LOG",
+        message = message,
+        onDate = onDate
+
+    )
+
+}
 
 @Composable
 fun GpsRow(
@@ -104,16 +127,22 @@ private fun BaseRow(
         Spacer(Modifier.width(12.dp))
 
         Text(
+            modifier = Modifier.width(72.dp),
             text = title,
             style = typography.body1,
             color = MaterialTheme.colors.onBackground
         )
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.weight(0.5f))
 
-        Column(Modifier.width(180.dp)) {
+        Column(
+            modifier=Modifier.weight(1f),
+            horizontalAlignment = Alignment.End
+        ) {
             Text(
                 text = message,
+                maxLines = 1,
+                overflow = TextOverflow.MiddleEllipsis,
                 style = typography.body2,
                 color = MaterialTheme.colors.onBackground
             )

@@ -36,9 +36,6 @@ fun TrackerNavHost(
         composable(route = History.route) {
             HistoryScreen(
                 viewModelStoreOwner = viewModelStoreOwner,
-                onAccountClick = { accountType ->
-                    //navController.navigateToSingleAccount(accountType)
-                }
             )
         }
         composable(route = Settings.route) {
