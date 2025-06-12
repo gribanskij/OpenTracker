@@ -1,5 +1,3 @@
-
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -63,12 +61,16 @@ dependencies {
     implementation(libs.adapterdelegates4)
     implementation(libs.cardview)
 
+    // DataStore
+
+
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation(libs.compose.navigation)
     implementation(libs.compose.permissions)
     implementation(libs.systemuicontroller)
+    implementation(libs.data.store)
 
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.runtime:runtime")

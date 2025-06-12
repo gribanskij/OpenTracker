@@ -21,6 +21,7 @@ comNav = "2.9.0"
 compose-bom = "2025.06.00"
 comp-perm = "0.37.3"
 systemuicontroller = "0.36.0"
+store = "1.1.7"
 
 
 [libraries]
@@ -45,6 +46,7 @@ compose-navigation = {group =  "androidx.navigation", name = "navigation-compose
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 compose-permissions = {group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "comp-perm" }
 systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "systemuicontroller" }
+data-store = {group ="androidx.datastore",name ="datastore-preferences",version.ref = "store"}
 
 
 [plugins]
