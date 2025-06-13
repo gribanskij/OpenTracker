@@ -2,6 +2,7 @@ package com.gribansky.opentracker.ui.settings
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.gribansky.opentracker.data.UserPreferences
 import com.gribansky.opentracker.data.dataStore
@@ -43,5 +44,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             getApplication<Application>().dataStore.updateUserPreferences(useWorkTime = useWorkTime)
         }
+    }
+}
+
+class SettingsViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
+            return SettingsViewModel(application) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

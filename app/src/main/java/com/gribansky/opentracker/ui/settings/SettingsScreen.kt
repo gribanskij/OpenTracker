@@ -1,13 +1,16 @@
 package com.gribansky.opentracker.ui.settings
 
+import android.app.Application
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -15,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gribansky.opentracker.data.UserPreferences
-import com.gribansky.opentracker.ui.ServiceViewModel
 import com.gribansky.opentracker.ui.theme.TrackerTheme
 
 @Composable
@@ -23,7 +25,11 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     viewModelStoreOwner: ViewModelStoreOwner,
 ) {
-    val viewModel: SettingsViewModel = viewModel(viewModelStoreOwner)
+    val context = LocalContext.current
+    val viewModel: SettingsViewModel = viewModel(
+        viewModelStoreOwner = viewModelStoreOwner,
+        factory = SettingsViewModelFactory(context.applicationContext as Application)
+    )
     val preferences by viewModel.userPreferences.collectAsState()
     Settings(
         modifier = modifier.fillMaxSize(),
@@ -37,14 +43,23 @@ fun SettingsScreen(
 
 @Composable
 fun Settings(
-    modifier:Modifier = Modifier,
+    modifier: Modifier = Modifier,
     preferences: UserPreferences,
     userNameChanged: (String) -> Unit,
     userPasswordChanged: (String) -> Unit,
     serverAddressChanged: (String) -> Unit,
     workTimeChanged: (Boolean) -> Unit
 ) {
-    val typography = MaterialTheme.typography
+    var username by remember { mutableStateOf(preferences.username) }
+    var password by remember { mutableStateOf(preferences.password) }
+    var serverAddress by remember { mutableStateOf(preferences.serverAddress) }
+
+    LaunchedEffect(preferences) {
+        username = preferences.username
+        password = preferences.password
+        serverAddress = preferences.serverAddress
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -52,28 +67,46 @@ fun Settings(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedTextField(
-            value = preferences.username,
-            onValueChange = userNameChanged,
+            value = username,
+            onValueChange = { username = it },
             label = { Text("Имя пользователя") },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { userNameChanged(username) }
+            )
         )
 
         OutlinedTextField(
-            value = preferences.password,
-            onValueChange = userPasswordChanged,
+            value = password,
+            onValueChange = { password = it },
             label = { Text("Пароль") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { userPasswordChanged(password) }
+            ),
             singleLine = true,
         )
 
         OutlinedTextField(
-            value = preferences.serverAddress,
-            onValueChange = serverAddressChanged,
+            value = serverAddress,
+            onValueChange = { serverAddress = it },
             label = { Text("Адрес сервера") },
             modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { serverAddressChanged(serverAddress) }
+            ),
             singleLine = true
         )
 
@@ -93,10 +126,10 @@ fun Settings(
         }
     }
 }
-@Preview (uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 fun SettingsPreview() {
-
     TrackerTheme {
         Settings(
             preferences = UserPreferences(),
