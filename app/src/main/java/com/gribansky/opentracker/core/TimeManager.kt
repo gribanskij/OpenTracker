@@ -1,13 +1,18 @@
 package com.gribansky.opentracker.core
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.gribansky.opentracker.data.PreferencesKeys
+import kotlinx.coroutines.flow.first
+
+import kotlinx.coroutines.runBlocking
 import java.util.Calendar
 
 private const val FIRST_START_TIME_INTERVAL =  1000 //ms
 private const val START_WORK_HOUR = 8
 private const val END_WORK_HOUR = 20
-private const val IS_WORK_TIME_ONLY = false
 
-class TimeManager {
+class TimeManager (private val dataStore: DataStore<Preferences>) {
 
      fun getNextTimePoint ():Long{
         return if (isInWrkTimeNow()) getFirstStartTimePoint()
@@ -20,9 +25,14 @@ class TimeManager {
     }
 
     fun isInWrkTimeNow(): Boolean {
-        if (!IS_WORK_TIME_ONLY) return true
-        val calendar = Calendar.getInstance()
-        return isWrkDay(calendar) && isWrkTime(calendar)
+
+        return runBlocking {
+            val useWorkTime = dataStore.data.first()[PreferencesKeys.USE_WORK_TIME] ?: true
+            if (!useWorkTime) return@runBlocking true
+            val calendar = Calendar.getInstance()
+            return@runBlocking isWrkDay(calendar) && isWrkTime(calendar)
+
+        }
     }
 
     private fun isWrkTime(calendar: Calendar): Boolean {

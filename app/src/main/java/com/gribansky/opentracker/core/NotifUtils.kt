@@ -12,8 +12,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.gribansky.opentracker.MainActivity
-
+import com.gribansky.opentracker.TrackerActivity
 
 
 const val CHANNEL_ID = "1000"
@@ -39,7 +38,7 @@ fun createNotificationChannel(context: Context) {
 
 
 fun getNotification(context: Context): Notification {
-    val contentIntent = Intent(context, MainActivity::class.java)
+    val contentIntent = Intent(context, TrackerActivity::class.java)
     val pendingIntent =
         PendingIntent.getActivity(context, 0, contentIntent, PendingIntent.FLAG_IMMUTABLE)
     val builder: NotificationCompat.Builder =
@@ -74,7 +73,7 @@ fun showFakeWarning(context: Context) {
 
 @SuppressLint("MissingPermission")
 fun showUpdateNeed(context: Context, info: String) {
-    val intent = Intent(context, MainActivity::class.java)
+    val intent = Intent(context, TrackerActivity::class.java)
 
 
     val pendingIntent = PendingIntent.getActivity(context,
@@ -97,7 +96,7 @@ fun showUpdateNeed(context: Context, info: String) {
 
 @SuppressLint("MissingPermission")
 fun showError(context: Context, title: String?, mes: String?) {
-    val intent = Intent(context, MainActivity::class.java)
+    val intent = Intent(context, TrackerActivity::class.java)
 
 
     val pendingIntent = PendingIntent.getActivity(

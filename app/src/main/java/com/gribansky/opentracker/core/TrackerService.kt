@@ -23,6 +23,7 @@ import com.gribansky.opentracker.core.log.LogResult
 import com.gribansky.opentracker.core.log.NetSender
 import com.gribansky.opentracker.core.log.PositionData
 import com.gribansky.opentracker.core.log.PositionDataLog
+import com.gribansky.opentracker.data.dataStore
 import com.gribansky.opentracker.ui.TrackerState
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -56,14 +57,10 @@ class TrackerService : Service() {
         onBufferOverflow = BufferOverflow.DROP_LATEST
     )
 
-    private val timeManager = TimeManager()
+    private lateinit var  timeManager:TimeManager
     private val binder = LocalBinder()
     private val trackerHist = ArrayDeque<PositionData>(HISTORY_WINDOW)
     private val events = mutableListOf<PositionDataLog>()
-
-    private val prefManager: IPrefManager by lazy {
-        SharePrefManager(PreferenceManager.getDefaultSharedPreferences(this))
-    }
 
     private val lock: WakeLock by lazy {
         (getSystemService(POWER_SERVICE) as PowerManager).run {
@@ -86,6 +83,8 @@ class TrackerService : Service() {
         super.onCreate()
         acquireWakeLock(WAKE_LOCK_TIMEOUT)
         createNotificationChannel(this)
+
+        timeManager = TimeManager(this.dataStore)
 
         val logManager = LogManager(
             locationProvider = LocationManager(LocationServices.getFusedLocationProviderClient(this)),
