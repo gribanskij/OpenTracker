@@ -38,7 +38,6 @@ android {
     }
 
     buildFeatures {
-        viewBinding = true
         buildConfig = true
         compose = true
     }
@@ -48,21 +47,9 @@ android {
 dependencies {
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
-    implementation(libs.androidx.preference.ktx)
     implementation(libs.google.gms)
     implementation(libs.kotlin.serialization)
-    implementation(libs.adapterdelegates4)
-    implementation(libs.cardview)
-
-    // DataStore
-
 
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)

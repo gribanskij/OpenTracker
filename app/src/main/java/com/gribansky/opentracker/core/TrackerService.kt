@@ -12,10 +12,8 @@ import android.os.PowerManager
 import android.os.PowerManager.WakeLock
 import android.os.SystemClock
 import androidx.core.app.ServiceCompat
-import androidx.preference.PreferenceManager
 import com.google.android.gms.location.LocationServices
 import com.gribansky.opentracker.core.log.FileSaver
-import com.gribansky.opentracker.core.log.ILocation
 import com.gribansky.opentracker.core.log.ILogManager
 import com.gribansky.opentracker.core.log.LocationManager
 import com.gribansky.opentracker.core.log.LogManager
