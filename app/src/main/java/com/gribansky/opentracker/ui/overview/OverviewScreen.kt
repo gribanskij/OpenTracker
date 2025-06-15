@@ -1,4 +1,4 @@
-package com.gribansky.opentracker.ui.dashboard
+package com.gribansky.opentracker.ui.overview
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,18 +48,15 @@ import java.util.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelProvider
-import android.app.Application
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.runtime.CompositionLocalProvider
 import com.gribansky.opentracker.core.TrackerStatus
 import com.gribansky.opentracker.ui.PreviewServiceViewModel
-import com.gribansky.opentracker.ui.TrackerState
+import com.gribansky.opentracker.core.TrackerState
 import com.gribansky.opentracker.ui.components.GSMRow
 import com.gribansky.opentracker.ui.components.formatDateTime
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import com.gribansky.opentracker.ui.theme.TrackerTheme
 
 @Composable

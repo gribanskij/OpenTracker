@@ -22,7 +22,7 @@ import com.gribansky.opentracker.core.log.NetSender
 import com.gribansky.opentracker.core.log.PositionData
 import com.gribansky.opentracker.core.log.PositionDataLog
 import com.gribansky.opentracker.data.dataStore
-import com.gribansky.opentracker.ui.TrackerState
+import com.gribansky.opentracker.core.TrackerState
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

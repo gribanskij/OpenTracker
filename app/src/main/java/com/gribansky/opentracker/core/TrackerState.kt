@@ -1,4 +1,4 @@
-package com.gribansky.opentracker.ui
+package com.gribansky.opentracker.core
 
 import kotlinx.serialization.Serializable
 

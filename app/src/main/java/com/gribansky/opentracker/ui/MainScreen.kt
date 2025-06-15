@@ -12,10 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.gribansky.opentracker.Overview
-import com.gribansky.opentracker.TrackerNavHost
-import com.gribansky.opentracker.navigateSingleTopTo
-import com.gribansky.opentracker.trackerTabRowScreens
+import com.gribansky.opentracker.navigation.Overview
+import com.gribansky.opentracker.navigation.TrackerNavHost
+import com.gribansky.opentracker.navigation.navigateSingleTopTo
+import com.gribansky.opentracker.navigation.trackerTabRowScreens
 import com.gribansky.opentracker.ui.components.TrackerTabRow
 
 @Composable

@@ -1,4 +1,4 @@
-package com.gribansky.opentracker
+package com.gribansky.opentracker.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard

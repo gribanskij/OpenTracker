@@ -1,5 +1,4 @@
-
-package com.gribansky.opentracker
+package com.gribansky.opentracker.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -8,7 +7,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.gribansky.opentracker.ui.dashboard.OverviewScreen
+import com.gribansky.opentracker.ui.overview.OverviewScreen
 import com.gribansky.opentracker.ui.history.HistoryScreen
 import com.gribansky.opentracker.ui.settings.SettingsScreen
 

@@ -29,7 +29,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.gribansky.opentracker.TrackerDestination
+import com.gribansky.opentracker.navigation.TrackerDestination
 import java.util.Locale
 
 @Composable
