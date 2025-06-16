@@ -236,7 +236,7 @@ private fun OverviewScreenCard(
 
                 SendAllButton(
                     modifier = Modifier.clearAndSetSemantics {
-                        contentDescription = "All "
+                        contentDescription = "send now "
                     },
                     onClick = onClickSendAll,
                 )
