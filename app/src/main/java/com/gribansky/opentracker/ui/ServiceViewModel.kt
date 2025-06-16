@@ -8,20 +8,22 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gribansky.opentracker.core.TRACKER_CLIENT_BIND
 import com.gribansky.opentracker.core.TrackerService
 import com.gribansky.opentracker.core.TrackerState
 import com.gribansky.opentracker.core.log.PositionData
+import com.gribansky.opentracker.ui.settings.SettingsViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-open class ServiceViewModel(application: Application) : AndroidViewModel(application) {
+class ServiceViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiOverView = MutableStateFlow(TrackerState())
-    open val uiOverView: StateFlow<TrackerState> = _uiOverView.asStateFlow()
+    val uiOverView: StateFlow<TrackerState> = _uiOverView.asStateFlow()
 
     private val _uiHistory = MutableStateFlow(emptyList<PositionData>())
     val uiHistory: StateFlow<List<PositionData>> = _uiHistory.asStateFlow()
@@ -56,7 +58,7 @@ open class ServiceViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    open fun bindService() {
+    fun bindService() {
         val intent = Intent(getApplication(), TrackerService::class.java).apply {
             action = TRACKER_CLIENT_BIND
         }
@@ -80,3 +82,14 @@ open class ServiceViewModel(application: Application) : AndroidViewModel(applica
         unbindService()
     }
 }
+
+class ServiceViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(ServiceViewModel::class.java)) {
+            return ServiceViewModel(application) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+

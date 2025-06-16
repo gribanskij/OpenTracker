@@ -1,5 +1,6 @@
 package com.gribansky.opentracker.ui.overview
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,9 +53,11 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalContext
 import com.gribansky.opentracker.core.TrackerStatus
-import com.gribansky.opentracker.ui.PreviewServiceViewModel
 import com.gribansky.opentracker.core.TrackerState
+import com.gribansky.opentracker.navigation.Overview
+import com.gribansky.opentracker.ui.ServiceViewModelFactory
 import com.gribansky.opentracker.ui.components.GSMRow
 import com.gribansky.opentracker.ui.components.formatDateTime
 import com.gribansky.opentracker.ui.theme.TrackerTheme
@@ -62,11 +65,12 @@ import com.gribansky.opentracker.ui.theme.TrackerTheme
 @Composable
 fun OverviewScreen(
     viewModelStoreOwner: ViewModelStoreOwner,
-    onAccountClick: (String) -> Unit = {},
+    onAccountClick: () -> Unit = {},
 ) {
+    val context = LocalContext.current
     val viewModel: ServiceViewModel = viewModel(
         viewModelStoreOwner = viewModelStoreOwner,
-        factory = (viewModelStoreOwner as? PreviewViewModelOwner)?.factory
+        factory = ServiceViewModelFactory(context.applicationContext as Application)
     )
     val uiState by viewModel.uiOverView.collectAsStateWithLifecycle()
 
@@ -74,6 +78,21 @@ fun OverviewScreen(
     LaunchedEffect(Unit) {
         viewModel.bindService()
     }
+    Overview(
+        uiState = uiState,
+        onAccountClick = onAccountClick,
+        onSendAllClick = viewModel::sendAll
+    )
+}
+
+@Composable
+fun Overview(
+    modifier: Modifier = Modifier,
+    uiState: TrackerState,
+    onSendAllClick: () -> Unit = {},
+    onAccountClick: () -> Unit = {},
+    ){
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -84,7 +103,7 @@ fun OverviewScreen(
         Spacer(Modifier.height(TrackerDefaultPadding))
         OverviewScreenCard (
             uiState = uiState,
-            onClickSendAll = { viewModel.sendAll() },
+            onClickSendAll = onSendAllClick,
         )
     }
 }
@@ -263,31 +282,13 @@ private val TrackerDefaultPadding = 12.dp
 
 
 
-
-private class PreviewViewModelOwner : ViewModelStoreOwner {
-    override val viewModelStore: ViewModelStore = ViewModelStore()
-    
-    val factory = object : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return PreviewServiceViewModel() as T
-        }
-    }
-}
-
-
-
-
-
 @Preview(showBackground = true)
 @Composable
 fun OverviewScreenPreview() {
     TrackerTheme {
-        OverviewScreen(
-            viewModelStoreOwner = PreviewViewModelOwner(),
-            onAccountClick = {}
+        Overview(
+            uiState = TrackerState()
         )
     }
 }
-
 
