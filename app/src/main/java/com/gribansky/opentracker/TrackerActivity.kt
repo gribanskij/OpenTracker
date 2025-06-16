@@ -7,10 +7,12 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +39,7 @@ fun TrackerApp() {
         var showPermissionScreen by remember {
             mutableStateOf(!context.hasAllPermissions())
         }
+        val hasBatteryOptimization by remember {derivedStateOf {context.isBatteryOptimizationEnabled()}}
 
         if (showPermissionScreen) {
             PermissionScreen(
@@ -45,7 +48,6 @@ fun TrackerApp() {
             )
         } else {
             MainScreen()
-
         }
     }
 }
@@ -68,4 +70,17 @@ fun Context.openAppSettings() {
         data = Uri.fromParts("package", packageName, null)
     }
     startActivity(intent)
+}
+
+// Открывает системные настройки энергосбережения для всех приложений
+fun Context.openBatteryOptimizationSettings() {
+    val intent = Intent().apply {
+        action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+    }
+    startActivity(intent)
+}
+
+fun Context.isBatteryOptimizationEnabled(): Boolean {
+    val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+    return !powerManager.isIgnoringBatteryOptimizations(packageName)
 }

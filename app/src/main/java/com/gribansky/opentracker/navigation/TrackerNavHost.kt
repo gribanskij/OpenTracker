@@ -37,7 +37,7 @@ fun TrackerNavHost(
         }
         composable(route = Settings.route) {
             SettingsScreen(
-                viewModelStoreOwner = viewModelStoreOwner
+                viewModelStoreOwner = it
             )
         }
     }

@@ -14,19 +14,18 @@ sealed interface TrackerDestination {
 
 data object Overview : TrackerDestination {
     override val icon = Icons.Filled.Dashboard
-    override val route = "overview"
+    override val route = "обзор"
 }
 
 data object History : TrackerDestination {
     override val icon = Icons.Filled.History
-    override val route = "history"
+    override val route = "журнал"
 }
 
 data object Settings : TrackerDestination {
     override val icon = Icons.Filled.Settings
-    override val route = "settings"
+    override val route = "настройки"
 }
 
 
-// Screens to be displayed in the top RallyTabRow
 val trackerTabRowScreens = listOf(Overview, History, Settings)

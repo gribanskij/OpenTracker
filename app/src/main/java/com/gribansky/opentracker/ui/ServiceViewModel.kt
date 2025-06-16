@@ -10,12 +10,10 @@ import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gribansky.opentracker.core.TRACKER_CLIENT_BIND
 import com.gribansky.opentracker.core.TrackerService
 import com.gribansky.opentracker.core.TrackerState
 import com.gribansky.opentracker.core.log.PositionData
-import com.gribansky.opentracker.ui.settings.SettingsViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
