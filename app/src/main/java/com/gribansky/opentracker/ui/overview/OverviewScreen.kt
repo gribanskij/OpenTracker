@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,19 +15,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,13 +34,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gribansky.opentracker.ui.ServiceViewModel
 import com.gribansky.opentracker.ui.components.GpsRow
 import com.gribansky.opentracker.ui.components.PacketRow
-import com.gribansky.opentracker.ui.components.TrackerAlertDialog
-import com.gribansky.opentracker.ui.components.TrackerDivider
 import java.util.Date
-import java.util.Locale
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelProvider
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme.typography
@@ -56,7 +43,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 import com.gribansky.opentracker.core.TrackerStatus
 import com.gribansky.opentracker.core.TrackerState
-import com.gribansky.opentracker.navigation.Overview
 import com.gribansky.opentracker.ui.ServiceViewModelFactory
 import com.gribansky.opentracker.ui.components.GSMRow
 import com.gribansky.opentracker.ui.components.formatDateTime
@@ -65,7 +51,6 @@ import com.gribansky.opentracker.ui.theme.TrackerTheme
 @Composable
 fun OverviewScreen(
     viewModelStoreOwner: ViewModelStoreOwner,
-    onAccountClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel: ServiceViewModel = viewModel(
@@ -80,7 +65,6 @@ fun OverviewScreen(
     }
     Overview(
         uiState = uiState,
-        onAccountClick = onAccountClick,
         onSendAllClick = viewModel::sendAll
     )
 }
@@ -90,7 +74,6 @@ fun Overview(
     modifier: Modifier = Modifier,
     uiState: TrackerState,
     onSendAllClick: () -> Unit = {},
-    onAccountClick: () -> Unit = {},
     ){
 
     Column(
@@ -99,90 +82,11 @@ fun Overview(
             .verticalScroll(rememberScrollState())
             .semantics { contentDescription = "Overview Screen" }
     ) {
-        //AlertCard()
         Spacer(Modifier.height(TrackerDefaultPadding))
         OverviewScreenCard (
             uiState = uiState,
             onClickSendAll = onSendAllClick,
         )
-    }
-}
-
-
-@Composable
-private fun AlertCard() {
-    var showDialog by remember { mutableStateOf(false) }
-    val alertMessage = "Heads up, you've used up 90% of your Shopping budget for this month."
-
-    if (showDialog) {
-        TrackerAlertDialog(
-            onDismiss = {
-                showDialog = false
-            },
-            bodyText = alertMessage,
-            buttonText = "Dismiss".uppercase(Locale.getDefault())
-        )
-    }
-    Card {
-        Column {
-            AlertHeader {
-                showDialog = true
-            }
-            TrackerDivider(
-                modifier = Modifier.padding(start = TrackerDefaultPadding, end = TrackerDefaultPadding)
-            )
-            AlertItem(alertMessage)
-        }
-    }
-}
-
-@Composable
-private fun AlertHeader(onClickSeeAll: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .padding(TrackerDefaultPadding)
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = "Alerts",
-            style = typography.subtitle2,
-            modifier = Modifier.align(Alignment.CenterVertically)
-        )
-        TextButton(
-            onClick = onClickSeeAll,
-            contentPadding = PaddingValues(0.dp),
-            modifier = Modifier.align(Alignment.CenterVertically)
-        ) {
-            Text(
-                text = "SEE ALL",
-                style =typography.button,
-            )
-        }
-    }
-}
-
-@Composable
-private fun AlertItem(message: String) {
-    Row(
-        modifier = Modifier
-            .padding(TrackerDefaultPadding)
-            .semantics(mergeDescendants = true) {},
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            style = typography.body2,
-            modifier = Modifier.weight(1f),
-            text = message
-        )
-        IconButton(
-            onClick = {},
-            modifier = Modifier
-                .align(Alignment.Top)
-                .clearAndSetSemantics {}
-        ) {
-            Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null)
-        }
     }
 }
 

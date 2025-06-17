@@ -12,7 +12,6 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.gribansky.opentracker.ui.MainScreen
+import com.gribansky.opentracker.ui.permissions.BatteryOptScreen
 import com.gribansky.opentracker.ui.permissions.PermissionScreen
 import com.gribansky.opentracker.ui.theme.TrackerTheme
 
@@ -39,15 +39,30 @@ fun TrackerApp() {
         var showPermissionScreen by remember {
             mutableStateOf(!context.hasAllPermissions())
         }
-        val hasBatteryOptimization by remember {derivedStateOf {context.isBatteryOptimizationEnabled()}}
 
-        if (showPermissionScreen) {
-            PermissionScreen(
-                onDismiss = { showPermissionScreen = false },
-                onOpenSettings = { context.openAppSettings() }
-            )
-        } else {
-            MainScreen()
+        var showBatteryOptScreen by remember {
+            mutableStateOf(context.isBatteryOptimizationEnabled())
+        }
+
+
+        when {
+            showPermissionScreen -> {
+                PermissionScreen(
+                    onDismiss = { showPermissionScreen = false },
+                    onOpenSettings = { context.openAppSettings() }
+                )
+            }
+
+            showBatteryOptScreen -> {
+                BatteryOptScreen (
+                    onDismiss = { showBatteryOptScreen = false },
+                    onOpenBatteryOptSettings = { context.openBatteryOptimizationSettings() }
+                )
+            }
+
+            else -> {
+                MainScreen()
+            }
         }
     }
 }

@@ -31,7 +31,7 @@ import com.gribansky.opentracker.ui.theme.TrackerTheme
 @Composable
 fun PermissionScreen(
     onDismiss: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
 ) {
 
     val permissions = listOfNotNull(
