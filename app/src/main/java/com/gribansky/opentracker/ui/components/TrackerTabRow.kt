@@ -47,7 +47,7 @@ fun TrackerTabRow(
         Row(Modifier.selectableGroup()) {
             allScreens.forEach { screen ->
                 TrackerTab(
-                    text = screen.route,
+                    text = screen.label,
                     icon = screen.icon,
                     onSelected = { onTabSelected(screen) },
                     selected = currentScreen == screen

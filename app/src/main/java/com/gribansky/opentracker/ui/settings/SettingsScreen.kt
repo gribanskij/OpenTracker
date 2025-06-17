@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -17,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gribansky.opentracker.R
 import com.gribansky.opentracker.data.UserPreferences
 import com.gribansky.opentracker.ui.theme.TrackerTheme
 
@@ -69,7 +71,7 @@ fun Settings(
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
-            label = { Text("Имя пользователя") },
+            label = { Text(stringResource(R.string.username)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             keyboardOptions = KeyboardOptions(
@@ -83,7 +85,7 @@ fun Settings(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Пароль") },
+            label = { Text(stringResource(R.string.password)) },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
@@ -99,7 +101,7 @@ fun Settings(
         OutlinedTextField(
             value = serverAddress,
             onValueChange = { serverAddress = it },
-            label = { Text("Адрес сервера") },
+            label = { Text(stringResource(R.string.server_address)) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done
@@ -118,7 +120,7 @@ fun Settings(
             Text(
                 style = MaterialTheme.typography.body2,
                 color = MaterialTheme.colors.onBackground,
-                text = "Использовать рабочее время")
+                text = stringResource(R.string.use_work_time))
             Switch(
                 checked = preferences.useWorkTime,
                 onCheckedChange = workTimeChanged

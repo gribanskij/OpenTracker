@@ -1,3 +1,29 @@
 <resources>
     <string name="app_name">Open tracker</string>
+    <string name="battery_opt_message">Для работы приложения необходимо отключить оптимизацию расхода заряда батареи</string>
+    <string name="open_settings">Открыть настройки</string>
+    <string name="permissions_required">Для работы приложения необходимы следующие разрешения:</string>
+    <string name="permission_location">-Доступ к точной геолокации</string>
+    <string name="permission_background_location">-Доступ к геолокации в фоне</string>
+    <string name="permission_notifications">-Разрешение на уведомления</string>
+    <string name="request_permissions">Запросить разрешения</string>
+    <string name="username">Имя пользователя</string>
+    <string name="password">Пароль</string>
+    <string name="server_address">Адрес сервера</string>
+    <string name="use_work_time">Использовать рабочее время</string>
+    <string name="send_data_now">Отправить данные сейчас</string>
+    <string name="overview">обзор</string>
+    <string name="history">журнал</string>
+    <string name="settings">настройки</string>
+    <string name="tracker_active">Трекер запущен</string>
+    <string name="tracker_waiting">Трекер ожидает запуск</string>
+    <string name="tracker_inactive">Трекер остановлен</string>
+    <string name="log">LOG</string>
+    <string name="gps">GPS</string>
+    <string name="gsm">GSM</string>
+    <string name="packets">Пакеты</string>
+    <string name="packets_sent">Отправлено (%d)</string>
+    <string name="packets_ready">Готовы к отправке (%s)</string>
+    <string name="gsm_point">GSM point</string>
+    <string name="dash">-</string>
 </resources>

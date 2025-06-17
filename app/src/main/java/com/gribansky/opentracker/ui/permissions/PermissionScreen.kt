@@ -16,9 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gribansky.opentracker.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.isGranted
@@ -107,29 +109,29 @@ fun PermissionRequestUI(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Для работы приложения необходимы следующие разрешения:",
+                text = stringResource(R.string.permissions_required),
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(32.dp))
-            Text("- Доступ к точной геолокации")
+            Text(stringResource(R.string.permission_location))
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                Text("- Доступ к геолокации в фоне")
+                Text(stringResource(R.string.permission_background_location))
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Text("- Разрешение на уведомления")
+                Text(stringResource(R.string.permission_notifications))
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(onClick = onRequestPermissions) {
-                Text("Запросить разрешения")
+                Text(stringResource(R.string.request_permissions))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = onOpenSettings) {
-                Text("Открыть настройки")
+                Text(stringResource(R.string.open_settings))
             }
         }
     }

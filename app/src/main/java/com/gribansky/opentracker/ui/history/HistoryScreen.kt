@@ -12,11 +12,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gribansky.opentracker.R
 import com.gribansky.opentracker.core.log.PositionData
 import com.gribansky.opentracker.core.log.PositionDataLog
 import com.gribansky.opentracker.core.log.PositionGpsData
@@ -74,7 +76,7 @@ fun TrackerHistory(
 
                 is PositionGsmData-> {
                     val dateTime = formatDateTime(Date(item.eventDate))
-                    val mes = "GSM point"
+                    val mes = stringResource(R.string.gsm_point)
                     GSMRow(
                         onDate = dateTime,
                         color = Color.Green,

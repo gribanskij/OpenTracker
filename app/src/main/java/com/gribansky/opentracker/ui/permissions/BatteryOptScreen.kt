@@ -15,9 +15,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gribansky.opentracker.R
 import com.gribansky.opentracker.isBatteryOptimizationEnabled
 import com.gribansky.opentracker.ui.theme.TrackerTheme
 import androidx.compose.runtime.remember
@@ -76,14 +78,14 @@ fun BatteryRequestUI(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Для работы приложения необходимо отключить оптимизацию расхода заряда батареи:",
+                text = stringResource(R.string.battery_opt_message),
                 textAlign = TextAlign.Center,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = onOpenSettings) {
-                Text("Открыть настройки")
+                Text(stringResource(R.string.open_settings))
             }
         }
     }

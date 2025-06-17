@@ -19,11 +19,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gribansky.opentracker.R
 import com.gribansky.opentracker.ui.theme.TrackerTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -43,7 +45,7 @@ fun LogRow(
     BaseRow(
         modifier = modifier,
         color = color,
-        title = "LOG",
+        title = stringResource(R.string.log),
         message = message,
         onDate = onDate
 
@@ -61,7 +63,7 @@ fun GpsRow(
     BaseRow(
         modifier = modifier,
         color = color,
-        title = "GPS",
+        title = stringResource(R.string.gps),
         message = message,
         onDate = onDate
 
@@ -78,7 +80,7 @@ fun GSMRow(
     BaseRow(
         modifier = modifier,
         color = color,
-        title = "GSM",
+        title = stringResource(R.string.gsm),
         message = message,
         onDate = onDate
 
@@ -96,7 +98,7 @@ fun PacketRow(
     BaseRow(
         modifier = modifier,
         color = color,
-        title = "Пакеты",
+        title = stringResource(R.string.packets),
         message = message,
         onDate = onDate
     )

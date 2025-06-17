@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gribansky.opentracker.R
 import com.gribansky.opentracker.ui.ServiceViewModel
 import com.gribansky.opentracker.ui.components.GpsRow
 import com.gribansky.opentracker.ui.components.PacketRow
@@ -121,7 +123,7 @@ private fun OverviewScreenCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text (
-                        text = status.label,
+                        text = status.getLabel(),
                         style = typography.body2,
                         color = MaterialTheme.colors.onBackground
                     )
@@ -177,8 +179,7 @@ private fun SendAllButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
             .height(44.dp)
             .fillMaxWidth()
     ) {
-
-        Text("Отправить данные сейчас")
+        Text(stringResource(R.string.send_data_now))
     }
 }
 
