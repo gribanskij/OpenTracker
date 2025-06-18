@@ -43,7 +43,7 @@ import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
-import com.gribansky.opentracker.core.TrackerStatus
+import com.gribansky.opentracker.ui.TrackerStatus
 import com.gribansky.opentracker.core.TrackerState
 import com.gribansky.opentracker.ui.ServiceViewModelFactory
 import com.gribansky.opentracker.ui.components.GSMRow

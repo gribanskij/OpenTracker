@@ -26,4 +26,12 @@
     <string name="packets_ready">Готовы к отправке (%s)</string>
     <string name="gsm_point">GSM point</string>
     <string name="dash">-</string>
+    <string name="notification_channel_name">Open Tracker</string>
+    <string name="notification_channel_description">Tracker events</string>
+    <string name="tracker_title">Трекер</string>
+    <string name="tracker_running_text">Трекер запущен</string>
+    <string name="warning_title">Предупреждение</string>
+    <string name="fake_location_warning_text">Обнаружено подложное местоположение. Трекер не работает</string>
+    <string name="update_available_title">Доступно обновление %s</string>
+    <string name="update_available_text">Нажмите для обновления</string>
 </resources>

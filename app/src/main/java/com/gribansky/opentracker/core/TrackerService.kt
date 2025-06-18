@@ -79,7 +79,7 @@ class TrackerService : Service() {
     override fun onCreate() {
         super.onCreate()
         acquireWakeLock(WAKE_LOCK_TIMEOUT)
-        createNotificationChannel(this)
+        NotificationUtils.createNotificationChannel(this)
 
         timeManager = TimeManager(this.dataStore)
 
@@ -207,7 +207,7 @@ class TrackerService : Service() {
     }
 
     private fun startForeground() {
-        val notification = getNotification(this)
+        val notification = NotificationUtils.getForegroundNotification(this)
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
         } else {
@@ -215,7 +215,7 @@ class TrackerService : Service() {
         }
         ServiceCompat.startForeground(
             this,
-            FOREGROUND_NOTIFICATION_ID,
+            NotificationConstants.FOREGROUND_NOTIFICATION_ID,
             notification,
             type
         )

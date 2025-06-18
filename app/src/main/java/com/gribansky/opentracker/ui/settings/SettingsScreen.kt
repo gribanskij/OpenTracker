@@ -123,7 +123,7 @@ fun Settings(
                 text = stringResource(R.string.use_work_time))
             Switch(
                 checked = preferences.useWorkTime,
-                onCheckedChange = workTimeChanged
+                onCheckedChange = workTimeChanged,
             )
         }
     }
