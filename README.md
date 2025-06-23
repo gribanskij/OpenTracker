@@ -31,5 +31,5 @@ To open one of the samples in Android Studio, begin by checking out one of the s
 Clone the repository:
 
 ```
-git clone git@github.com:android/architecture-samples.git
+git clone git@github.com:gribanskij/OpenTracker.git
 ```
