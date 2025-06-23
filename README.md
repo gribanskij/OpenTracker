@@ -23,13 +23,3 @@ In this app you'll find:
 
 *   Intermediate developers and beginners looking for a sample app with location feache.
 *   Advanced developers looking for ready to use solution for business.
-
-## Opening a sample in Android Studio
-
-To open one of the samples in Android Studio, begin by checking out one of the sample branches, and then open the root directory in Android Studio. The following series of steps illustrate how to open the sample.
-
-Clone the repository:
-
-```
-git clone git@github.com:gribanskij/OpenTracker.git
-```
