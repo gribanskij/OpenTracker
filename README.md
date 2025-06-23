@@ -11,9 +11,11 @@ In this app you'll find:
 
 ## Screenshots
 
-<img src="screenshots/OverView.jpg" alt="Screenshot">
-<img src="screenshots/Log.jpg">
-<img src="screenshots/Settings.jpg">
+<div style="display: flex; gap: 10px;">
+<img src="screenshots/OverView.jpg" style="width: 30%; height: auto" alt="Screenshot">
+<img src="screenshots/Log.jpg"  style="width: 30%; height: auto">
+<img src="screenshots/Settings.jpg" style="width: 30%; height: auto">
+</div>
 
 
 ## What is it not?
