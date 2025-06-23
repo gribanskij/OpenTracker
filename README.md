@@ -13,18 +13,14 @@ In this app you'll find:
 
 <img src="screenshots/screenshots.png" alt="Screenshot">
 
-## Why a to-do app?
-
-The app in this project aims to be simple enough that you can understand it quickly, but complex enough to showcase difficult design decisions and testing scenarios. For more information, see the [app's specification](https://github.com/googlesamples/android-architecture/wiki/To-do-app-specification).
 
 ## What is it not?
-*   A template. Check out the [Architecture Templates](https://github.com/android/architecture-templates) instead.
-*   A UI/Material Design sample. The interface of the app is deliberately kept simple to focus on architecture. Check out the [Compose Samples](https://github.com/android/compose-samples) instead.
-*   A real production app with network access, user authentication, etc. Check out the [Now in Android app](https://github.com/android/nowinandroid) instead.
+*   A UI/Material Design sample. The interface of the app is deliberately kept simple to focus on architecture.
+*   A real production app with network access, user authentication, etc.
 
 ## Who is it for?
 
-*   Intermediate developers and beginners looking for a way to structure their app in a testable and maintainable way.
+*   Intermediate developers and beginners looking for a sample app with location feaches.
 *   Advanced developers looking for quick reference.
 
 ## Opening a sample in Android Studio
@@ -35,28 +31,4 @@ Clone the repository:
 
 ```
 git clone git@github.com:android/architecture-samples.git
-```
-
-Finally open the `architecture-samples/` directory in Android Studio.
-
-### License
-
-
-```
-Copyright 2024 Google, Inc.
-
-Licensed to the Apache Software Foundation (ASF) under one or more contributor
-license agreements. See the NOTICE file distributed with this work for
-additional information regarding copyright ownership. The ASF licenses this
-file to you under the Apache License, Version 2.0 (the "License"); you may not
-use this file except in compliance with the License. You may obtain a copy of
-the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations under
-the License.
 ```
