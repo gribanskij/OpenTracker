@@ -15,13 +15,14 @@ In this app you'll find:
 
 
 ## What is it not?
+
 *   A UI/Material Design sample. The interface of the app is deliberately kept simple to focus on architecture.
 *   A real production app with network access, user authentication, etc.
 
 ## Who is it for?
 
-*   Intermediate developers and beginners looking for a sample app with location feaches.
-*   Advanced developers looking for quick reference.
+*   Intermediate developers and beginners looking for a sample app with location feache.
+*   Advanced developers looking for ready to use solution for business.
 
 ## Opening a sample in Android Studio
 
