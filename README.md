@@ -11,7 +11,9 @@ In this app you'll find:
 
 ## Screenshots
 
-<img src="screenshots/screenshots.png" alt="Screenshot">
+<img src="screenshots/OverView.jpg" alt="Screenshot">
+<img src="screenshots/Log.jpg">
+<img src="screenshots/Settings.jpg">
 
 
 ## What is it not?
