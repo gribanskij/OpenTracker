@@ -25,21 +25,30 @@ class FileSaver(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) : 
     private var currentLogFile: File? = null
     private var nextRenameTime: Long = System.currentTimeMillis() + INIT_TIME_TO_CHANGE_FILE
 
-    override suspend fun save(dirPath: String, log: List<String>, makeNow: Boolean): Result<List<String>> {
+    override suspend fun save(
+        dirPath: String,
+        log: List<String>,
+        makeNow: Boolean
+    ): Result<List<String>> {
         return runCatching {
             if (currentLogFile == null) {
                 currentLogFile = makeNewLogFile(dirPath)
             }
             saveToFile(log)
 
-            if (makeNow || System.currentTimeMillis() > nextRenameTime || abs(System.currentTimeMillis() - nextRenameTime) > TIME_INTERVAL_TO_CHANGE_FILE) {
+            if (makeNow || System.currentTimeMillis() > nextRenameTime || abs(
+                    System.currentTimeMillis()
+                            - nextRenameTime
+                ) > TIME_INTERVAL_TO_CHANGE_FILE
+            ) {
                 renameLogFile(dirPath)
                 nextRenameTime = System.currentTimeMillis() + TIME_INTERVAL_TO_CHANGE_FILE
             }
             currentLogFile = null
 
             // Возвращаем список файлов с расширением .txt в директории
-            File(dirPath).listFiles()?.filter { it.name.endsWith(DATA_FILE_EXT_TXT) }?.map { it.absolutePath } ?: emptyList()
+            File(dirPath).listFiles()?.filter { it.name.endsWith(DATA_FILE_EXT_TXT) }
+                ?.map { it.absolutePath } ?: emptyList()
         }
     }
 
