@@ -17,6 +17,11 @@ In this app you'll find:
 <img src="screenshots/Settings.jpg" style="width: 30%; height: auto">
 </div>
 
+<div style="display: flex; gap: 10px;">
+<img src="screenshots/PermissionScreen.jpg" style="width: 30%; height: auto" alt="Screenshot">
+<img src="screenshots/BatteryOptScreen.jpg"  style="width: 30%; height: auto">
+</div>
+
 
 ## What is it not?
 
