@@ -7,7 +7,7 @@ In this app you'll find:
 *   A single-activity architecture, using **[Navigation Compose](https://developer.android.com/jetpack/compose/navigation)**.
 *   A presentation layer that contains a Compose screen (View) and a **ViewModel** per screen (or feature).
 *   Reactive UIs using **[Flow](https://developer.android.com/kotlin/flow)** and **[coroutines](https://kotlinlang.org/docs/coroutines-overview.html)** for asynchronous operations.
-*   A data laer using **[Foreground](https://developer.android.com/develop/background-work/services/fgs)** with fused location provider **[Get the last known location](https://developer.android.com/develop/sensors-and-location/location/retrieve-current)** .
+*   A data laer using **[Foreground](https://developer.android.com/develop/background-work/services/fgs)** with fused location provider **[Get the last known location](https://developer.android.com/develop/sensors-and-location/location/retrieve-current)** and **[Datastore](https://developer.android.com/topic/libraries/architecture/datastore)** for settings feature.
 
 ## Screenshots
 
